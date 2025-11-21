@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+python-dotenv
+python-multipart
+websockets
+motor
+pymongo
+google-genai
+deepgram-sdk==3.3.2
+httpx
+skyfield      # <--- NEW: NASA-grade Astronomy
+pytz          # <--- NEW: Timezone handling
