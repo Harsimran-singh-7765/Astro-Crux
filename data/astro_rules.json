@@ -1,0 +1,187 @@
+[
+  {
+    "id": "sun_general",
+    "text": "The Sun represents the soul, father, authority, and government. It is strong in Aries (Exalted) and Leo (Own Sign). It is weak in Libra (Debilitated). Sun issues: confidence, vitality, leadership problems.",
+    "tags": ["sun", "basics", "confidence", "authority"]
+  },
+  {
+    "id": "sun_weak_remedy",
+    "text": "For weak Sun: Chant Surya Mantra 'Om Suryaya Namaha' on Sundays at sunrise. Donate wheat, jaggery, and copper. Wear Ruby (Manik) or Garnet. Perform Surya Namaskar daily. Practice sun gazing safely at sunrise.",
+    "tags": ["sun", "remedy", "mantra", "gemstone"]
+  },
+  {
+    "id": "moon_general",
+    "text": "Moon rules mind, emotions, mother, and mental peace. It is exalted in Taurus and strong in Cancer. Moon issues: emotional instability, sleep problems, anxiety, mother conflicts.",
+    "tags": ["moon", "emotions", "mind", "mental health"]
+  },
+  {
+    "id": "moon_weak_remedy",
+    "text": "For weak Moon: Chant 'Om Chandraya Namaha' on Mondays. Donate milk, white ghee, and rice to poor. Wear Pearl (Moti) or Moonstone. Offer water to Moon daily at night. Practice meditation and deep breathing.",
+    "tags": ["moon", "remedy", "mantra", "gemstone", "emotions"]
+  },
+  {
+    "id": "mars_general",
+    "text": "Mars represents courage, action, sexuality, and conflict. Exalted in Capricorn, debilitated in Cancer. Mars issues: anger, aggression, accidents, wounds, low courage, sexual dysfunction.",
+    "tags": ["mars", "courage", "action", "conflict"]
+  },
+  {
+    "id": "mars_remedy_mangal_dosh",
+    "text": "For Mars/Mangal Dosh: Chant 'Om Mangalaya Namaha' on Tuesdays. Wear Red Coral (Moonga) on silver or copper ring. Donate red lentils, red cloth, or blood-red flowers. Perform Hanuman Chalisa. Avoid meat on Tuesdays.",
+    "tags": ["mars", "remedy", "mangal_dosh", "gemstone", "mantra"]
+  },
+  {
+    "id": "mercury_general",
+    "text": "Mercury governs intellect, speech, commerce, and siblings. Issues: poor communication, business loss, nervousness, skin problems, anxiety, learning difficulties.",
+    "tags": ["mercury", "intellect", "communication", "commerce"]
+  },
+  {
+    "id": "mercury_remedy",
+    "text": "For weak Mercury: Chant 'Om Budhaya Namaha' on Wednesdays. Wear Emerald (Panna) on gold or silver. Donate green items, books, or money for education. Speak truth, avoid gossip. Improve handwriting.",
+    "tags": ["mercury", "remedy", "gemstone", "mantra", "speech"]
+  },
+  {
+    "id": "jupiter_general",
+    "text": "Jupiter is the great benefic. It rules knowledge, wisdom, children, and fortune. Issues: lack of opportunity, poor judgment, educational struggles, infertility, legal problems.",
+    "tags": ["jupiter", "wisdom", "fortune", "children"]
+  },
+  {
+    "id": "jupiter_remedy",
+    "text": "For weak Jupiter: Chant 'Om Guruveya Namaha' on Thursdays. Wear Yellow Sapphire (Pukhraj). Donate yellow items, flour, or money to temples. Help children and students. Practice gratitude and generosity.",
+    "tags": ["jupiter", "remedy", "gemstone", "mantra", "wisdom"]
+  },
+  {
+    "id": "venus_general",
+    "text": "Venus rules love, beauty, marriage, creativity, and material comfort. Issues: relationship problems, marriage delay, creative blocks, financial loss, lack of charm.",
+    "tags": ["venus", "love", "marriage", "relationships", "creativity"]
+  },
+  {
+    "id": "venus_remedy",
+    "text": "For weak Venus: Chant 'Om Shukraya Namaha' on Fridays. Wear Diamond (Heera), White Sapphire, or Opal. Donate white items, flowers, or perfumes. Respect women. Listen to classical music. Practice self-care.",
+    "tags": ["venus", "remedy", "gemstone", "mantra", "relationships"]
+  },
+  {
+    "id": "saturn_general",
+    "text": "Saturn brings discipline, delay, and karma. Issues: delays in life, poverty, chronic illness, depression, fear, karmic debts, joint pain.",
+    "tags": ["saturn", "discipline", "karma", "delay"]
+  },
+  {
+    "id": "saturn_remedy",
+    "text": "For Saturn: Chant 'Om Shanaischaraya Namaha' on Saturdays. Wear Blue Sapphire (Neelam) with caution (test first). Donate black items, mustard oil, or iron items to poor. Fast on Saturdays. Respect elders.",
+    "tags": ["saturn", "remedy", "gemstone", "mantra", "karma"]
+  },
+  {
+    "id": "saturn_7th_house",
+    "text": "Saturn in 7th house delays marriage until after 30. The partner will be mature, serious, loyal. Not a bad placement if accepted. Remedy: Accept Saturn's timeline, meditate, strengthen Venus.",
+    "tags": ["saturn", "7th_house", "marriage", "delay"]
+  },
+  {
+    "id": "rahu_general",
+    "text": "Rahu (North Node) brings obsession, sudden events, foreign elements. Issues: anxiety, addictions, materialism, sudden losses, illegitimate desires.",
+    "tags": ["rahu", "north_node", "obsession", "sudden"]
+  },
+  {
+    "id": "rahu_remedy",
+    "text": "For Rahu: Chant 'Om Rahave Namaha' on Saturdays. Wear Hessonite (Gomed). Donate coconut, mustard oil, or salt. Practice detachment and meditation. Avoid addictions. Be cautious of sudden opportunities.",
+    "tags": ["rahu", "remedy", "gemstone", "mantra", "obsession"]
+  },
+  {
+    "id": "ketu_general",
+    "text": "Ketu (South Node) brings detachment, spiritual wisdom, hidden losses. Issues: loneliness, hidden enemies, legal troubles, spiritual confusion.",
+    "tags": ["ketu", "south_node", "detachment", "spiritual"]
+  },
+  {
+    "id": "ketu_remedy",
+    "text": "For Ketu: Chant 'Om Ketave Namaha' or Maha Mrityunjaya Mantra. Wear Cat's Eye (Lehsunia). Donate brown/grey items or charity. Practice meditation and spirituality. Seek wisdom from elders.",
+    "tags": ["ketu", "remedy", "gemstone", "mantra", "spiritual"]
+  },
+  {
+    "id": "health_problems",
+    "text": "Health issues often connected to weak Moon (mental health), weak Mars (low vitality), afflicted 6th house (disease), or Saturn (chronic pain). Remedy: Regular yoga, meditation, Pranayama, and herbal medicine.",
+    "tags": ["health", "6th_house", "disease", "wellness"]
+  },
+  {
+    "id": "marriage_delay",
+    "text": "Marriage delay caused by: Saturn in 7th, Rahu/Ketu in 7th, weak Venus, afflicted 7th lord. Solutions: Venus remedies, 7th house puja, marriage counseling astrologer, timing of proposal.",
+    "tags": ["marriage", "relationship", "delay", "7th_house"]
+  },
+  {
+    "id": "career_stagnation",
+    "text": "Career problems: Weak 10th house, weak Sun or Mercury, Saturn dasha, afflicted 10th lord. Solutions: Strengthen career lord, 10th house puja, professional development, change timing.",
+    "tags": ["career", "10th_house", "business", "job"]
+  },
+  {
+    "id": "financial_loss",
+    "text": "Money problems: Weak Jupiter (prosperity), afflicted 2nd house (wealth), Rahu (losses), Saturn (restriction). Solutions: Jupiter puja, give charity, avoid risky speculation.",
+    "tags": ["finance", "money", "wealth", "2nd_house"]
+  },
+  {
+    "id": "anxiety_stress",
+    "text": "Anxiety caused by: Weak Moon, afflicted Mercury, Rahu/Ketu aspects. Solutions: Moon remedies, Hanuman Chalisa, meditation, breathing exercises, yellow sapphire.",
+    "tags": ["mental_health", "anxiety", "stress", "moon"]
+  },
+  {
+    "id": "relationship_conflict",
+    "text": "Conflicts with partner: Mars/Saturn afflicting 7th, Venus weak, lack of understanding planets. Solutions: Venus strengthening, marriage counseling, astrological compatibility check.",
+    "tags": ["relationship", "marriage", "conflict", "venus"]
+  },
+  {
+    "id": "education_struggles",
+    "text": "Learning difficulties: Weak Mercury, Rahu affecting 4th house (education), poor concentration. Solutions: Mercury puja, emerald, focus on studies, tutoring if needed.",
+    "tags": ["education", "learning", "mercury", "4th_house"]
+  },
+  {
+    "id": "parent_child_conflict",
+    "text": "Issues with parents: Afflicted 9th house (father), weak Moon (mother), Rahu/Saturn aspects. Solutions: Show respect, forgive past, perform parent puja, strengthen 9th lord.",
+    "tags": ["family", "parents", "conflict", "9th_house"]
+  },
+  {
+    "id": "twin_planets_yoga",
+    "text": "Beneficial yogas: Raj Yoga (benefic in 1st, 4th, 7th, 10th), Dhana Yoga (lords of 2nd + 11th in angles/trines), Panch Maha Purush Yoga. Activate through timing and intention.",
+    "tags": ["yoga", "beneficial", "raj_yoga", "prosperity"]
+  },
+  {
+    "id": "inauspicious_yoga",
+    "text": "Challenging yogas: Kemdrum Yoga (no planets in adjacent houses), Parivartana (planets in enemy signs), Papakartari (malefics on sides). Solutions: Puja, mantras, gem remedies.",
+    "tags": ["yoga", "challenging", "remedy"]
+  },
+  {
+    "id": "dasha_system",
+    "text": "Dashas are planetary periods that activate karma. Current dasha lord matters most. Identify your Maha Dasha and Antara Dasha. Benefic dasha brings opportunity; malefic requires caution.",
+    "tags": ["dasha", "timing", "karma", "mahadasha"]
+  },
+  {
+    "id": "transit_effects",
+    "text": "Transits (Gochar) show current planetary movements. Saturn/Rahu transits cause challenges; Jupiter brings luck. Check if malefics are crossing 7th house (relationships) or 10th house (career).",
+    "tags": ["transit", "gochar", "timing", "current"]
+  },
+  {
+    "id": "general_life_advice",
+    "text": "Life guidance: Follow your dharma (purpose). Don't force against planetary timing. Use challenges (Saturn/Rahu) for spiritual growth. Practice gratitude, charity, and meditation. Be patient with karma.",
+    "tags": ["advice", "dharma", "spirituality", "life"]
+  },
+  {
+    "id": "mantra_power",
+    "text": "Mantras strengthen planets when chanted 108 times on appropriate day. Best times: sunrise for Sun, dawn for Jupiter, evening for Venus, night for Moon. Consistency matters more than quantity.",
+    "tags": ["mantra", "chanting", "remedy", "timing"]
+  },
+  {
+    "id": "gem_selection",
+    "text": "Gems work best when wearer's chart supports them. Must wear on correct metal (gold, silver, copper) and finger. Test for 3 days before permanent wear. Quality matters: real gems only.",
+    "tags": ["gemstone", "remedy", "metal", "finger"]
+  },
+  {
+    "id": "puja_rituals",
+    "text": "Pujas (rituals) amplify planetary remedies. Home pujas can be done daily; temple pujas on relevant days. Involve fire, offerings, and intention. Consistency and devotion are keys.",
+    "tags": ["puja", "ritual", "devotion", "remedy"]
+  },
+  {
+    "id": "timing_success",
+    "text": "Success depends on Muhurat (auspicious timing). Major actions (marriage, starting business, surgery) should be done in auspicious timing. Avoid inauspicious periods (Rahu Kaal, eclipses).",
+    "tags": ["muhurat", "timing", "auspicious", "success"]
+  },
+  {
+    "id": "self_remedy",
+    "text": "Best remedy is self-improvement. Charity removes obstacles, meditation calms mind, discipline pleases Saturn, truth pleases Jupiter. Live ethically and intentionally.",
+    "tags": ["self", "karma", "dharma", "ethics"]
+  }
+]

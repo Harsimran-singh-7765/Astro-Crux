@@ -12,3 +12,4 @@ deepgram-sdk==3.3.2
 httpx
 skyfield      # <--- NEW: NASA-grade Astronomy
 pytz          # <--- NEW: Timezone handling
+chromadb     # <--- NEW: Vector database

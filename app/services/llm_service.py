@@ -1,273 +1,140 @@
 import logging
 import json
-import re
 from google import genai
 from google.genai import types
+from pydantic import BaseModel, Field
+from typing import List, Optional
 from app.core.config import settings
 from app.schemas.game_schemas import GameSession
+# Import the RAG service that holds BPHS
+from app.services.rag_service import rag_service
 
 logger = logging.getLogger(__name__)
 
+# Initialize Gemini
 try:
     llm_client = genai.Client(api_key=settings.GOOGLE_API_KEY)
 except Exception as e:
-    logger.error(f"Error configuring GenAI client: {e}")
+    logger.error(f"GenAI Client Error: {e}")
+
+# --- 1. Define Structured Output Schema (The Protocol) ---
+class UIControl(BaseModel):
+    """Hidden commands to control the frontend visuals."""
+    highlight_houses: List[int] = Field(
+        description="List of house numbers (1-12) to highlight based on the answer. E.g. [7, 1] for self & marriage.",
+        default=[]
+    )
+    highlight_planets: List[str] = Field(
+        description="List of planets mentioned in the answer. E.g. ['Sun', 'Saturn'].",
+        default=[]
+    )
+    transit_date: Optional[str] = Field(
+        description="YYYY-MM-DD date if discussing a future/past event (Time Travel). Use ONLY for predictions.",
+        default=None
+    )
+    suggested_remedy: Optional[str] = Field(
+        description="Name of a remedy/mantra if suggested. E.g., 'Surya Mantra' or 'Blue Sapphire'.",
+        default=None
+    )
+
+class AstroResponse(BaseModel):
+    """The strict output format for the Astrologer."""
+    speech: str = Field(description="The natural language response to speak to the user. Keep it wise, mystical, but under 3 sentences.")
+    ui: UIControl = Field(description="UI control metadata.")
+
+# --- 2. Helper Functions ---
 
 def _format_history(history):
-    """Format conversation history for context"""
     return "\n".join([f"{entry.role.upper()}: {entry.message}" for entry in history])
 
 def _extract_chart_insights(chart_data: dict) -> str:
     """
-    Parse the chart data and extract key insights in natural language.
-    This makes it easier for the LLM to reference specific placements.
+    Flatten the complex chart JSON into a readable summary for the LLM.
+    We convert the dictionary to a pretty-printed JSON string so Gemini reads it clearly.
     """
-    insights = []
-    
-    # Extract planets
-    if 'planets' in chart_data:
-        planets = chart_data['planets']
-        for planet, data in planets.items():
-            sign = data.get('sign', 'Unknown')
-            house = data.get('house', 'Unknown')
-            degree = data.get('longitude', 0)
-            
-            insights.append(
-                f"{planet} is in {sign} (House {house}) at {degree:.2f}° - "
-                f"This placement influences {_get_planet_domain(planet)}"
-            )
-    
-    # Extract houses
-    if 'houses' in chart_data:
-        houses = chart_data['houses']
-        insights.append(f"\nAscendant (Lagna): {houses.get('1', {}).get('sign', 'Unknown')}")
-    
-    # Extract yogas or special combinations
-    if 'aspects' in chart_data:
-        insights.append("\nKey Planetary Aspects:")
-        for aspect in chart_data.get('aspects', [])[:3]:  # Top 3 aspects
-            insights.append(f"- {aspect}")
-    
-    return "\n".join(insights)
-
-def _get_planet_domain(planet: str) -> str:
-    """Return the domain each planet governs"""
-    domains = {
-        'Sun': 'self-identity, father, authority, vitality',
-        'Moon': 'mind, emotions, mother, comfort',
-        'Mars': 'energy, courage, conflicts, siblings',
-        'Mercury': 'communication, intellect, trade',
-        'Jupiter': 'wisdom, fortune, children, spirituality',
-        'Venus': 'relationships, beauty, luxury, creativity',
-        'Saturn': 'discipline, delays, karma, longevity',
-        'Rahu': 'obsessions, foreign lands, unconventional paths',
-        'Ketu': 'detachment, spirituality, past karma'
-    }
-    return domains.get(planet, 'life areas')
-
-def _build_system_prompt(session: GameSession) -> str:
-    """
-    Construct the core system prompt that defines Acharya Gemini's persona
-    and gives him access to the chart data in a structured way.
-    """
-    chart_insights = _extract_chart_insights(session.chart_data)
-    name = session.chart_data.get('meta', {}).get('name', 'Seeker')
-    
-    system_prompt = f"""You are Acharya Gemini, a master Vedic Astrologer with 30 years of practice. You combine ancient Jyotish wisdom with precise astronomical calculations.
-
-YOUR PERSONALITY:
-- Warm, empathetic, and conversational (like a wise grandfather)
-- Grounded in mathematics: You reference actual planetary positions
-- Balance mysticism with practicality
-- Speak naturally in short sentences (2-4 sentences max per response)
-- Use phrases like "Your chart reveals...", "The planets suggest...", "Consider this..."
-- Avoid fortune-telling or definitive predictions; instead offer insights and guidance
-
-THE SEEKER'S BIRTH CHART (Sidereal/Lahiri Ayanamsa):
-Name: {name}
-Birth Details: {session.chart_data.get('meta', {}).get('date_time', 'Unknown')}
-Location: {session.chart_data.get('meta', {}).get('location', 'Unknown')}
-
-PLANETARY POSITIONS & INSIGHTS:
-{chart_insights}
-
-CORE RULES:
-1. ALWAYS reference specific placements when answering ("Since your Mars is in Scorpio in the 3rd house...")
-2. Connect planets to the question asked (Career → Jupiter, Saturn, 10th house; Relationships → Venus, 7th house)
-3. If a question is unrelated to astrology, gently redirect: "Let's explore your chart instead..."
-4. Keep responses conversational and voice-friendly (no bullet points or lists)
-5. If uncertain about a placement, say "Let me examine that area of your chart more closely..."
-6. Integrate Vedic concepts naturally: dashas (periods), yogas (combinations), aspects (drishti)
-
-EXAMPLE GOOD RESPONSES:
-❌ "Venus is in your 7th house" (too dry)
-✅ "Your Venus sits in the 7th house of partnerships, suggesting you attract harmony through relationships, though Saturn's aspect may bring maturity slowly."
-
-❌ "You will be successful" (fortune-telling)
-✅ "With Jupiter in your 10th house, career growth comes through teaching or guiding others. The current dasha supports this."
-
-CONVERSATION STYLE:
-- Start with acknowledgment: "Ah, you're asking about..." 
-- Middle: Reference 1-2 specific placements
-- End: Offer actionable insight or a reflective question
-- Length: 2-3 sentences maximum (this is voice chat!)
-
-Remember: You are a guide, not a fortune-teller. Empower {name} to understand their cosmic blueprint."""
-    
-    return system_prompt
-
-def get_astro_response(session: GameSession) -> str:
-    """
-    Generates a response based on the Vedic Chart + Conversation History.
-    Enhanced with structured chart insights and persona prompt.
-    """
-    system_prompt = _build_system_prompt(session)
-    conversation_history = _format_history(session.conversation_history)
-    
-    # Get the latest user message
-    latest_question = ""
-    if session.conversation_history:
-        latest_question = session.conversation_history[-1].message
-    
-    # Construct the full prompt
-    full_prompt = f"""{system_prompt}
-
-CONVERSATION SO FAR:
-{conversation_history}
-
-CURRENT QUESTION: {latest_question}
-
-Respond as Acharya Gemini in 2-3 natural sentences. Reference specific planetary positions from the chart above."""
-
     try:
+        # We assume chart_data is the structure returned by vedic_calculator
+        return json.dumps(chart_data, indent=2, default=str)
+    except Exception:
+        return str(chart_data)
+
+# --- 3. Main Logic ---
+
+def get_astro_response(session: GameSession) -> dict:
+    """
+    Orchestrates: RAG (Book) + Math (Chart) -> Gemini -> JSON Output
+    """
+    try:
+        # A. Context Preparation
+        user_query = session.conversation_history[-1].message if session.conversation_history else "General reading"
+        
+        # 1. RAG: Search BPHS/Books for rules using HyDE logic
+        logger.info(f"🔍 Searching Ancient Texts for: {user_query}")
+        retrieved_context = rag_service.get_relevant_context(user_query)
+        
+        # 2. Chart: Get user's calculated math
+        chart_summary = _extract_chart_insights(session.chart_data)
+
+        # B. Prompt Engineering
+        prompt = f"""
+        You are Acharya Gemini, a Vedic Astrologer.
+        
+        USER'S KUNDLI (CALCULATED POSITIONS):
+        {chart_summary}
+        
+        ANCIENT TEXTS (AUTHORITATIVE RULES FROM BPHS/SARAVALI):
+        {retrieved_context}
+        
+        CONVERSATION HISTORY:
+        {_format_history(session.conversation_history)}
+        
+        INSTRUCTIONS:
+        1. **Analyze:** Compare the User's Chart with the Ancient Rules provided above.
+        2. **Speak:** Answer the user's question. 
+           - Be kind, mystical, and accurate.
+           - Quote the text if applicable (e.g., "The ancient texts say...").
+           - Do not be fatalistic; always offer guidance.
+        3. **Visuals (UI Control):** - If you mention a specific House (e.g. 7th) or Planet (e.g. Sun), add it to `highlight_houses`/`highlight_planets`.
+           - If you predict a specific future time, set `transit_date`.
+           - If you suggest a fix, set `suggested_remedy`.
+        
+        User Question: {user_query}
+        """
+
+        # C. Call Gemini with JSON Mode
         response = llm_client.models.generate_content(
             model="gemini-2.0-flash",
-            contents=full_prompt,
+            contents=prompt,
             config=types.GenerateContentConfig(
-                temperature=0.7,  # Balance between creativity and consistency
-                top_p=0.9,
-                top_k=40,
-                max_output_tokens=150,  # Force brevity for voice
+                response_mime_type="application/json",
+                response_schema=AstroResponse,
+                temperature=0.6 # Balanced for creativity + facts
             )
         )
         
-        response_text = response.text.strip()
-        
-        # Safety check: If response is too long, truncate naturally
-        sentences = response_text.split('. ')
-        if len(sentences) > 3:
-            response_text = '. '.join(sentences[:3]) + '.'
-        
-        return response_text
-        
+        # D. Parse Response
+        if hasattr(response, 'parsed') and response.parsed:
+             result = response.parsed
+        else:
+             # Fallback manual parse if the SDK doesn't parse automatically
+             clean_json = response.text.replace("```json", "").replace("```", "")
+             result = AstroResponse.model_validate_json(clean_json)
+
+        logger.info(f"🗣️ Acharya: {result.speech}")
+        logger.info(f"🎨 UI Actions: {result.ui}")
+
+        # Return dictionary for GameSessionManager
+        return result.model_dump()
+
     except Exception as e:
-        logger.error(f"LLM Error: {e}")
-        return "The cosmic signals are unclear right now. Please ask me again."
-
-def extract_focus_signal(response_text: str) -> str:
-    """
-    Extract the focus signal from the LLM response.
-    Looks for patterns like [FOCUS:HOUSE_7] or [FOCUS:PLANET_MARS]
-    
-    Returns: Signal string (e.g., "HOUSE_7", "PLANET_MARS") or empty string if not found
-    """
-    match = re.search(r'\[FOCUS:([A-Z_0-9]+)\]', response_text)
-    if match:
-        signal = match.group(1)
-        logger.info(f"[LLM] Focus signal extracted: {signal}")
-        return signal
-    return ""
-
-def detect_house_mentions(response_text: str) -> list:
-    """
-    Intelligently detect which houses are mentioned in the response.
-    Looks for patterns like "7th house", "House 7", "Seventh House", etc.
-    
-    Returns: List of house numbers (e.g., [7, 10])
-    """
-    houses_mentioned = set()
-    
-    # Map of house names to numbers
-    house_names = {
-        'first': 1, '1st': 1, 'first house': 1,
-        'second': 2, '2nd': 2, 'second house': 2,
-        'third': 3, '3rd': 3, 'third house': 3,
-        'fourth': 4, '4th': 4, 'fourth house': 4,
-        'fifth': 5, '5th': 5, 'fifth house': 5,
-        'sixth': 6, '6th': 6, 'sixth house': 6,
-        'seventh': 7, '7th': 7, 'seventh house': 7,
-        'eighth': 8, '8th': 8, 'eighth house': 8,
-        'ninth': 9, '9th': 9, 'ninth house': 9,
-        'tenth': 10, '10th': 10, 'tenth house': 10,
-        'eleventh': 11, '11th': 11, 'eleventh house': 11,
-        'twelfth': 12, '12th': 12, 'twelfth house': 12,
-    }
-    
-    # Convert response to lowercase for matching
-    text_lower = response_text.lower()
-    
-    # Direct patterns: "7th house", "house 7", "7 house"
-    for match in re.finditer(r'(?:(\d+)(?:st|nd|rd|th)?|house\s+(\d+)|(\d+)\s+house)', text_lower):
-        house_num = int(match.group(1) or match.group(2) or match.group(3))
-        if 1 <= house_num <= 12:
-            houses_mentioned.add(house_num)
-    
-    # Word patterns: "seventh house", "seventh", etc.
-    for pattern, house_num in house_names.items():
-        if pattern in text_lower:
-            houses_mentioned.add(house_num)
-    
-    return sorted(list(houses_mentioned))
-
-def detect_planet_mentions(response_text: str) -> list:
-    """
-    Detect which planets are mentioned in the response.
-    
-    Returns: List of planet names (e.g., ['Mercury', 'Venus'])
-    """
-    planets_detected = set()
-    text_lower = response_text.lower()
-    
-    planet_patterns = {
-        'sun': 'Sun',
-        'moon': 'Moon',
-        'mercury': 'Mercury',
-        'venus': 'Venus',
-        'mars': 'Mars',
-        'jupiter': 'Jupiter',
-        'saturn': 'Saturn',
-        'rahu': 'Rahu',
-        'ketu': 'Ketu',
-    }
-    
-    for pattern, name in planet_patterns.items():
-        if pattern in text_lower:
-            planets_detected.add(name)
-    
-    return sorted(list(planets_detected))
-
-def clean_response_text(response_text: str) -> str:
-    """
-    Remove focus signals from response text before sending to TTS.
-    
-    Returns: Cleaned response text without [FOCUS:...] tags
-    """
-    cleaned = re.sub(r'\[FOCUS:[A-Z_0-9]+\]\s*', '', response_text)
-    return cleaned.strip()
-
-def validate_chart_data(chart_data: dict) -> bool:
-    """
-    Validate that the chart data has the minimum required structure.
-    Returns True if valid, False otherwise.
-    """
-    required_keys = ['planets', 'houses', 'meta']
-    
-    if not all(key in chart_data for key in required_keys):
-        logger.error("Chart data missing required keys")
-        return False
-    
-    if not chart_data['planets'] or len(chart_data['planets']) < 7:
-        logger.error("Insufficient planetary data")
-        return False
-    
-    return True
+        logger.error(f"LLM Logic Error: {e}")
+        # Fail-safe response structure so the app doesn't crash
+        return {
+            "speech": "The cosmic frequencies are currently interrupted. Please ask me again.",
+            "ui": {
+                "highlight_houses": [], 
+                "highlight_planets": [],
+                "transit_date": None,
+                "suggested_remedy": None
+            }
+        }
