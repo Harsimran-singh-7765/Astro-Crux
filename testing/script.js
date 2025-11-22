@@ -226,15 +226,30 @@ function addLog(role, text) {
 
 // --- Mic ---
 function startMic() {
-    initAudioCtx();
     navigator.mediaDevices.getUserMedia({audio:true}).then(stream => {
-        mediaRecorder = new MediaRecorder(stream, {mimeType: 'audio/webm'});
+        // Try webm first, fall back to default
+        let mimeType = 'audio/webm;codecs=opus';
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+            console.log(`[Audio] ${mimeType} not supported, using default`);
+            mimeType = 'audio/webm';
+        }
+        
+        mediaRecorder = new MediaRecorder(stream, {mimeType: mimeType});
         mediaRecorder.ondataavailable = e => {
-            if (socket && socket.readyState === 1) socket.send(e.data);
+            if (socket && socket.readyState === 1) {
+                console.log(`[Audio] Sending chunk (${e.data.type}): ${e.data.size} bytes`);
+                socket.send(e.data);
+            }
         };
-        mediaRecorder.start(250);
+        mediaRecorder.onerror = (event) => {
+            console.error("[Audio] MediaRecorder error:", event.error);
+        };
+        mediaRecorder.start(500); // 500ms timeslice
         socket.send(JSON.stringify({action: 'start_speaking'}));
         updateStatus("RECORDING...");
+    }).catch(err => {
+        console.error("[Mic] Error accessing microphone:", err);
+        updateStatus("MIC ERROR");
     });
 }
 

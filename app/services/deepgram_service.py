@@ -30,10 +30,12 @@ class LiveTranscription:
             model="nova-2",
             language="en-US",
             smart_format=True,
-            encoding="opus" # Correct encoding for webm
+            encoding="opus"
         )
         self.dg_connection.on(LiveTranscriptionEvents.Transcript, self._on_transcript) # type: ignore
         self.dg_connection.on(LiveTranscriptionEvents.Error, self._on_error) # type: ignore
+        self.dg_connection.on(LiveTranscriptionEvents.Open, self._on_open) # type: ignore
+        self.dg_connection.on(LiveTranscriptionEvents.Close, self._on_close) # type: ignore
         
         try:
             if not self.dg_connection.start(options): # type: ignore
@@ -59,14 +61,18 @@ class LiveTranscription:
         if result and result.channel and result.channel.alternatives:
             transcript = result.channel.alternatives[0].transcript
             if transcript:
-                # --- ADDED LOG ---
-                logger.debug(f"[LiveTranscription] Partial transcript received: '{transcript}'")
-                # ---
+                logger.info(f"[LiveTranscription] ✅ Transcript: '{transcript}'")
                 self.full_transcript += transcript + " "
 
     def _on_error(self, *args, **kwargs):
         error = kwargs.get("error")
         logger.error(f"[LiveTranscription] Deepgram Error: {error}")
+
+    def _on_open(self, *args, **kwargs):
+        logger.info(f"[LiveTranscription] Connection opened")
+
+    def _on_close(self, *args, **kwargs):
+        logger.info(f"[LiveTranscription] Connection closed")
 
     def stop(self) -> str:
         """Stops the connection and returns the final accumulated transcript."""
