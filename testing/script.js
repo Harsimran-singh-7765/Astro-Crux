@@ -4,6 +4,7 @@ let mediaRecorder;
 let audioContext;
 let audioQueue = [];
 let isSpeaking = false;
+let chartData = null; // Store chart data for later use
 
 // --- North Indian Chart Layout (House Polygons) ---
 // A 400x400 Grid.
@@ -83,6 +84,53 @@ function updateChartData(visualData) {
     }
 }
 
+function populateChartFromPlanetData(chartFull) {
+    // chartFull is the full chart object with planets data
+    // planets: { sun: {house: 1, ...}, moon: {house: 2, ...}, ... }
+    
+    console.log("[Chart] 🌍 Populating chart from planet data");
+    
+    if (!chartFull || !chartFull.planets) {
+        console.warn("[Chart] ⚠️ No planet data available");
+        return;
+    }
+    
+    // Clear all houses first
+    for (let i = 1; i <= 12; i++) {
+        const el = document.getElementById(`text-${i}`);
+        if (el) el.textContent = "";
+    }
+    
+    // Build map of houses to planets
+    const housePlanets = {};
+    for (let i = 1; i <= 12; i++) {
+        housePlanets[i] = [];
+    }
+    
+    // Populate from planets
+    for (const [planetKey, planetData] of Object.entries(chartFull.planets)) {
+        const house = planetData.house;
+        // Capitalize planet name
+        const planetName = planetKey.charAt(0).toUpperCase() + planetKey.slice(1);
+        
+        if (house >= 1 && house <= 12) {
+            housePlanets[house].push(planetName);
+            console.log(`[Chart] ✓ Placed ${planetName} in House ${house}`);
+        }
+    }
+    
+    // Display planets in each house
+    for (let i = 1; i <= 12; i++) {
+        const el = document.getElementById(`text-${i}`);
+        if (el && housePlanets[i].length > 0) {
+            el.textContent = housePlanets[i].join(" ");
+            console.log(`[Chart] 📍 House ${i}: ${housePlanets[i].join(", ")}`);
+        }
+    }
+    
+    console.log("[Chart] ✅ Chart populated with planets");
+}
+
 function highlightHouse(houseStr) {
     // Expected input: "HOUSE_7" or "ASCENDANT"
     
@@ -103,6 +151,27 @@ function highlightHouse(houseStr) {
         let el = document.getElementById(targetId);
         if (el) el.classList.add('highlight');
     }
+}
+
+function displayPlanetsInHouses(houses, planets) {
+    // Display planets for specified houses and highlight them.
+    // houses: array of house numbers [7, 10]
+    // planets: array of planet names ['Venus', 'Saturn']
+    // chartData: the full chart data object with planet positions
+    
+    console.log(`[Chart] 🏠 Highlighting houses: ${houses}`);
+    
+    // Clear old highlights
+    document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+    
+    // Highlight the mentioned houses only - don't change planet display
+    houses.forEach(houseNum => {
+        const el = document.getElementById(`house-${houseNum}`);
+        if (el) {
+            el.classList.add('highlight');
+            console.log(`[Chart] ✓ Highlighted House ${houseNum}`);
+        }
+    });
 }
 
 // --- Connection Logic ---
@@ -235,7 +304,12 @@ function handleJson(msg) {
     }
     else if (msg.status === "chart_data") {
         console.log("[MSG] 📊 Chart data received");
-        updateChartData(msg.chart);
+        chartData = msg;  // Store full message for later planet lookup
+        populateChartFromPlanetData(msg.chart);  // Use the new function to populate
+    }
+    else if (msg.status === "chart_focus") {
+        console.log(`[MSG] 🌟 Chart focus - Houses: ${msg.houses}, Planets: ${msg.planets}`);
+        displayPlanetsInHouses(msg.houses, msg.planets);
     }
     else if (msg.status === "error") {
         console.error("[MSG] ⚠️ Error:", msg.message);

@@ -5,7 +5,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 from uuid import UUID
 from app.schemas.game_schemas import GameSession, ConversationEntry
 from app.services.deepgram_service import deepgram_service 
-from app.services.llm_service import get_astro_response, extract_focus_signal, clean_response_text
+from app.services.llm_service import get_astro_response, extract_focus_signal, clean_response_text, detect_house_mentions, detect_planet_mentions
 
 logger = logging.getLogger(__name__)
 
@@ -162,6 +162,18 @@ class GameSessionManager:
             if focus_signal:
                 logger.info(f"[{self.session_id}] ✨ Focus signal detected: {focus_signal}")
                 await self._send_json({"status": "ai_focus", "focus": focus_signal})
+            
+            # Detect houses and planets mentioned in the response
+            houses_mentioned = detect_house_mentions(response)
+            planets_mentioned = detect_planet_mentions(response)
+            
+            if houses_mentioned or planets_mentioned:
+                logger.info(f"[{self.session_id}] 🏠 Houses mentioned: {houses_mentioned}, 🌍 Planets mentioned: {planets_mentioned}")
+                await self._send_json({
+                    "status": "chart_focus",
+                    "houses": houses_mentioned,
+                    "planets": planets_mentioned
+                })
             
             # Clean response for TTS (removes focus tags)
             clean_response = clean_response_text(response)

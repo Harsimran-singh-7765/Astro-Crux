@@ -178,6 +178,74 @@ def extract_focus_signal(response_text: str) -> str:
         return signal
     return ""
 
+def detect_house_mentions(response_text: str) -> list:
+    """
+    Intelligently detect which houses are mentioned in the response.
+    Looks for patterns like "7th house", "House 7", "Seventh House", etc.
+    
+    Returns: List of house numbers (e.g., [7, 10])
+    """
+    houses_mentioned = set()
+    
+    # Map of house names to numbers
+    house_names = {
+        'first': 1, '1st': 1, 'first house': 1,
+        'second': 2, '2nd': 2, 'second house': 2,
+        'third': 3, '3rd': 3, 'third house': 3,
+        'fourth': 4, '4th': 4, 'fourth house': 4,
+        'fifth': 5, '5th': 5, 'fifth house': 5,
+        'sixth': 6, '6th': 6, 'sixth house': 6,
+        'seventh': 7, '7th': 7, 'seventh house': 7,
+        'eighth': 8, '8th': 8, 'eighth house': 8,
+        'ninth': 9, '9th': 9, 'ninth house': 9,
+        'tenth': 10, '10th': 10, 'tenth house': 10,
+        'eleventh': 11, '11th': 11, 'eleventh house': 11,
+        'twelfth': 12, '12th': 12, 'twelfth house': 12,
+    }
+    
+    # Convert response to lowercase for matching
+    text_lower = response_text.lower()
+    
+    # Direct patterns: "7th house", "house 7", "7 house"
+    for match in re.finditer(r'(?:(\d+)(?:st|nd|rd|th)?|house\s+(\d+)|(\d+)\s+house)', text_lower):
+        house_num = int(match.group(1) or match.group(2) or match.group(3))
+        if 1 <= house_num <= 12:
+            houses_mentioned.add(house_num)
+    
+    # Word patterns: "seventh house", "seventh", etc.
+    for pattern, house_num in house_names.items():
+        if pattern in text_lower:
+            houses_mentioned.add(house_num)
+    
+    return sorted(list(houses_mentioned))
+
+def detect_planet_mentions(response_text: str) -> list:
+    """
+    Detect which planets are mentioned in the response.
+    
+    Returns: List of planet names (e.g., ['Mercury', 'Venus'])
+    """
+    planets_detected = set()
+    text_lower = response_text.lower()
+    
+    planet_patterns = {
+        'sun': 'Sun',
+        'moon': 'Moon',
+        'mercury': 'Mercury',
+        'venus': 'Venus',
+        'mars': 'Mars',
+        'jupiter': 'Jupiter',
+        'saturn': 'Saturn',
+        'rahu': 'Rahu',
+        'ketu': 'Ketu',
+    }
+    
+    for pattern, name in planet_patterns.items():
+        if pattern in text_lower:
+            planets_detected.add(name)
+    
+    return sorted(list(planets_detected))
+
 def clean_response_text(response_text: str) -> str:
     """
     Remove focus signals from response text before sending to TTS.
