@@ -199,6 +199,14 @@ async function startSession() {
         document.getElementById('setupPanel').classList.add('hidden');
         document.getElementById('gamePanel').style.display = 'flex';
         
+        // Start constellation animation
+        if (typeof startConstellations === 'function') {
+            console.log("[Session] 🌌 Starting constellation background");
+            startConstellations();
+        } else {
+            console.warn("[Session] ⚠️ startConstellations not available");
+        }
+        
         connectWS(data.session_id);
 
     } catch (e) {

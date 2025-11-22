@@ -108,6 +108,24 @@
             display: flex;
             width: 100%;
             display: none; /* Hidden by default */
+            position: relative;
+        }
+
+        /* Constellation Canvas Background */
+        #constellationCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        #constellationCanvas.active {
+            opacity: 1;
         }
 
         /* Left: The Chart */
@@ -118,6 +136,7 @@
             align-items: center;
             justify-content: center;
             position: relative;
+            z-index: 1;
         }
 
         /* THE NORTH INDIAN KUNDLI (SVG) */
@@ -156,9 +175,12 @@
         .comms-area {
             width: 350px;
             border-left: 1px solid var(--gold-dim);
-            background: rgba(5, 5, 5, 0.9);
+            background: rgba(5, 5, 5, 0.85);
+            backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
+            position: relative;
+            z-index: 1;
         }
 
         #transcript {
@@ -230,6 +252,8 @@
         </div>
 
         <div id="gamePanel">
+            <!-- Constellation Canvas - ADD THIS -->
+            <canvas id="constellationCanvas"></canvas>
             
             <div class="chart-area" id="chartContainer">
                 <div class="kundli-container">
@@ -247,7 +271,7 @@
 
         </div>
     </div>
-
+    <script src="constellation.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
