@@ -319,6 +319,22 @@ function handleJson(msg) {
         console.log(`[MSG] 🌟 Chart focus - Houses: ${msg.houses}, Planets: ${msg.planets}`);
         displayPlanetsInHouses(msg.houses, msg.planets);
     }
+    else if (msg.status === "astro_ui_update") {
+        console.log(`[MSG] ✨ Astro UI Update received`);
+        if (msg.highlights) {
+            const houses = msg.highlights.houses || [];
+            const planets = msg.highlights.planets || [];
+            console.log(`[MSG] 🏠 Highlighting houses: ${houses}, planets: ${planets}`);
+            displayPlanetsInHouses(houses, planets);
+        }
+        if (msg.remedy) {
+            console.log(`[MSG] 💊 Suggested remedy: ${msg.remedy}`);
+            addLog("Acharya", `💊 Remedy: ${msg.remedy}`);
+        }
+        if (msg.time_travel) {
+            console.log(`[MSG] 🕐 Time travel date: ${msg.time_travel}`);
+        }
+    }
     else if (msg.status === "error") {
         console.error("[MSG] ⚠️ Error:", msg.message);
         updateStatus("ERROR: " + msg.message);
