@@ -115,6 +115,7 @@ async function startSession() {
     const time = document.getElementById('birthTime').value;
     const location = document.getElementById('birthPlace').value;
 
+    console.log(`[Session] 🌟 Starting session - Name: ${name}, Date: ${date}, Time: ${time}, Location: ${location}`);
     btn.innerText = "ALIGNING STARS...";
 
     try {
@@ -124,16 +125,15 @@ async function startSession() {
             body: JSON.stringify({ name, date, time, location })
         });
         const data = await res.json();
+        console.log(`[Session] ✅ Session started with ID: ${data.session_id}`);
         
         document.getElementById('setupPanel').classList.add('hidden');
         document.getElementById('gamePanel').style.display = 'flex';
         
         connectWS(data.session_id);
-        
-        // Fill chart if data is present (assuming API sends it, or WS will send it)
-        // For now, WS greeting usually triggers first logic.
 
     } catch (e) {
+        console.error(`[Session] ❌ Error: ${e}`);
         alert("Error: " + e);
         btn.innerText = "RETRY";
     }
@@ -143,14 +143,29 @@ function connectWS(id) {
     socket = new WebSocket(`ws://127.0.0.1:8000/api/v1/game/ws/${id}`);
     socket.binaryType = 'arraybuffer'; // Using AudioContext flow
 
-    socket.onopen = () => updateStatus("CONNECTED TO ETHER");
+    socket.onopen = () => {
+        console.log("[WS] 🟢 WebSocket connected successfully");
+        updateStatus("CONNECTED TO ETHER");
+    };
     
     socket.onmessage = (event) => {
         if (typeof event.data === "string") {
+            console.log("[WS] 📨 Received JSON:", event.data.substring(0, 100));
             handleJson(JSON.parse(event.data));
         } else {
+            console.log(`[WS] 🔊 Received audio: ${event.data.byteLength} bytes`);
             playAudioChunk(event.data);
         }
+    };
+    
+    socket.onerror = (error) => {
+        console.error("[WS] ❌ WebSocket error:", error);
+        updateStatus("CONNECTION ERROR");
+    };
+    
+    socket.onclose = () => {
+        console.log("[WS] 🔴 WebSocket closed");
+        updateStatus("DISCONNECTED");
     };
 }
 
@@ -162,6 +177,7 @@ function initAudioCtx() {
 }
 
 function playAudioChunk(buffer) {
+    console.log(`[Audio] 🎵 Playing chunk: ${buffer.byteLength} bytes`);
     initAudioCtx();
     const float32 = new Float32Array(new Int16Array(buffer).length);
     const int16 = new Int16Array(buffer);
@@ -177,47 +193,66 @@ function playAudioChunk(buffer) {
     let start = Math.max(audioContext.currentTime, nextStartTime);
     source.start(start);
     nextStartTime = start + audioBuf.duration;
+    console.log(`[Audio] ✓ Scheduled to play at ${start.toFixed(3)}s`);
 }
 
 // --- Message Handling ---
 function handleJson(msg) {
+    console.log(`[MSG] Received: ${msg.status}`);
+    
     if (msg.status === "ai_speaking") {
+        console.log("[MSG] 🎙️ AI is speaking");
         updateStatus("ACHARYA IS SPEAKING...");
         document.getElementById('chartContainer').classList.add('speaking-glow');
-        // Extract Focus?
-        // In this architecture, backend sends focus inside ai_response_text usually, 
-        // OR we can parse it here if backend sends a specific "focus" field.
     } 
     else if (msg.status === "ai_finished_speaking") {
+        console.log("[MSG] ✅ AI finished speaking");
         updateStatus("LISTENING...");
         document.getElementById('chartContainer').classList.remove('speaking-glow');
-        highlightHouse(null); // Remove highlight
+        highlightHouse(null);
     }
     else if (msg.status === "ai_response_text") {
-        // PARSE FOCUS SIGNAL: [FOCUS:HOUSE_7]
+        console.log("[MSG] 💬 AI response:", msg.text.substring(0, 80));
         let text = msg.text;
         let focusMatch = text.match(/\[FOCUS:(.*?)\]/);
         
         if (focusMatch) {
             let focusTarget = focusMatch[1];
+            console.log("[MSG] ✨ Focus detected:", focusTarget);
             highlightHouse(focusTarget);
-            text = text.replace(/\[FOCUS:.*?\]/, ""); // Clean UI text
+            text = text.replace(/\[FOCUS:.*?\]/, "");
         }
         
         addLog("Acharya", text);
     }
     else if (msg.status === "user_response_text") {
+        console.log("[MSG] 🎤 User transcript:", msg.text);
         addLog("You", msg.text);
     }
-    
-    // If using the visual_data from backend helper:
-    // Note: We need to ensure the backend sends "visual_data" in a message or initial handshake.
-    // For simplicity, assume session start or greeting passes chart data context if implemented.
+    else if (msg.status === "ai_thinking") {
+        console.log("[MSG] 🧠 AI is thinking...");
+        updateStatus("ACHARYA THINKS...");
+    }
+    else if (msg.status === "chart_data") {
+        console.log("[MSG] 📊 Chart data received");
+        updateChartData(msg.chart);
+    }
+    else if (msg.status === "error") {
+        console.error("[MSG] ⚠️ Error:", msg.message);
+        updateStatus("ERROR: " + msg.message);
+    }
+    else {
+        console.log("[MSG] 🔷 Unknown status:", msg.status);
+    }
 }
 
-function updateStatus(txt) { document.getElementById('status').innerText = txt; }
+function updateStatus(txt) { 
+    console.log(`[UI] 📍 Status: ${txt}`);
+    document.getElementById('status').innerText = txt; 
+}
 
 function addLog(role, text) {
+    console.log(`[UI] 💬 ${role}: ${text.substring(0, 60)}`);
     let div = document.createElement('div');
     div.className = `msg ${role.toLowerCase()}`;
     div.innerHTML = `<strong>${role}:</strong> ${text}`;
@@ -226,37 +261,61 @@ function addLog(role, text) {
 
 // --- Mic ---
 function startMic() {
+    console.log("[Mic] 🎤 Request to start microphone");
     navigator.mediaDevices.getUserMedia({audio:true}).then(stream => {
         // Try webm first, fall back to default
         let mimeType = 'audio/webm;codecs=opus';
         if (!MediaRecorder.isTypeSupported(mimeType)) {
-            console.log(`[Audio] ${mimeType} not supported, using default`);
+            console.log(`[Mic] ⚠️ ${mimeType} not supported, using default`);
             mimeType = 'audio/webm';
         }
+        console.log(`[Mic] ✅ Using MIME type: ${mimeType}`);
         
         mediaRecorder = new MediaRecorder(stream, {mimeType: mimeType});
+        console.log(`[Mic] ✅ MediaRecorder created`);
+        
         mediaRecorder.ondataavailable = e => {
             if (socket && socket.readyState === 1) {
-                console.log(`[Audio] Sending chunk (${e.data.type}): ${e.data.size} bytes`);
+                console.log(`[Mic] 📤 Sending chunk (${e.data.type}): ${e.data.size} bytes`);
                 socket.send(e.data);
+            } else {
+                console.warn(`[Mic] ⚠️ Socket not ready, dropping chunk: ${e.data.size} bytes`);
             }
         };
         mediaRecorder.onerror = (event) => {
-            console.error("[Audio] MediaRecorder error:", event.error);
+            console.error("[Mic] ❌ MediaRecorder error:", event.error);
         };
+        mediaRecorder.onstart = () => {
+            console.log("[Mic] ▶️ Recording started");
+        };
+        mediaRecorder.onstop = () => {
+            console.log("[Mic] ⏹️ Recording stopped");
+        };
+        
         mediaRecorder.start(500); // 500ms timeslice
+        console.log("[Mic] ✅ Started recording with 500ms timeslice");
+        
         socket.send(JSON.stringify({action: 'start_speaking'}));
+        console.log("[Mic] 📤 Sent 'start_speaking' signal");
+        
         updateStatus("RECORDING...");
     }).catch(err => {
-        console.error("[Mic] Error accessing microphone:", err);
+        console.error("[Mic] ❌ Error accessing microphone:", err);
         updateStatus("MIC ERROR");
     });
 }
 
 function stopMic() {
+    console.log("[Mic] ⏹️ Request to stop microphone");
     if (mediaRecorder) {
         mediaRecorder.stop();
+        console.log("[Mic] ✅ MediaRecorder stopped");
+        
         socket.send(JSON.stringify({action: 'stop_speaking'}));
+        console.log("[Mic] 📤 Sent 'stop_speaking' signal");
+        
         updateStatus("TRANSMITTING...");
+    } else {
+        console.warn("[Mic] ⚠️ No MediaRecorder to stop");
     }
 }
