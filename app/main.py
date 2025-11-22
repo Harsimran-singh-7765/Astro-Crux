@@ -1,5 +1,6 @@
 import logging
 from fastapi import FastAPI
+import os 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.api.v1.api_router import api_router
@@ -19,6 +20,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+if not os.path.exists("static"):
+    os.makedirs("static")
+
+if not os.path.exists("testing"):
+    os.makedirs("testing")
+    
 app.include_router(api_router, prefix="/api/v1")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
