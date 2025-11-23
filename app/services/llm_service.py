@@ -111,7 +111,7 @@ def get_astro_response(session: GameSession) -> dict:
         **Tone:** Mystical, Empathetic, Concise.
         
         **Tone & Style:**
-        - **NO EMOJIS.** Do not use 💊, ✨, or any icons.
+        - **NO EMOJIS.** Do not use 💊, ✨, or any imogies.
         - **Speak in Terms of Houses (Bhavas):** Do not just say "Mercury in Sagittarius." Say "Mercury is sitting in your 12th House of Loss..."
         - **Be Diagnostic:** Explain the *logic*. Why is the job delayed? (e.g., "Because the Lord of your 10th house is weak...").
         - **Remedies:** If you suggest a remedy, explain *why* it works. (e.g., "This mantra strengthens Jupiter to remove the 12th house negativity").
