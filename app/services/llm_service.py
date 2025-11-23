@@ -6,8 +6,8 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from app.core.config import settings
 from app.schemas.game_schemas import GameSession
-# Import the RAG service that holds BPHS
 from app.services.rag_service import rag_service
+from app.services.dasha_calculator import get_current_dasha
 
 logger = logging.getLogger(__name__)
 
@@ -17,124 +17,140 @@ try:
 except Exception as e:
     logger.error(f"GenAI Client Error: {e}")
 
-# --- 1. Define Structured Output Schema (The Protocol) ---
+# --- 1. Schemas ---
 class UIControl(BaseModel):
-    """Hidden commands to control the frontend visuals."""
-    highlight_houses: List[int] = Field(
-        description="List of house numbers (1-12) to highlight based on the answer. E.g. [7, 1] for self & marriage.",
-        default=[]
-    )
-    highlight_planets: List[str] = Field(
-        description="List of planets mentioned in the answer. E.g. ['Sun', 'Saturn'].",
-        default=[]
-    )
-    transit_date: Optional[str] = Field(
-        description="YYYY-MM-DD date if discussing a future/past event (Time Travel). Use ONLY for predictions.",
-        default=None
-    )
-    suggested_remedy: Optional[str] = Field(
-        description="Name of a remedy/mantra if suggested. E.g., 'Surya Mantra' or 'Blue Sapphire'.",
-        default=None
-    )
+    highlight_houses: List[int] = Field(default=[])
+    highlight_planets: List[str] = Field(default=[])
+    transit_date: Optional[str] = Field(default=None)
+    suggested_remedy: Optional[str] = Field(default=None)
 
 class AstroResponse(BaseModel):
-    """The strict output format for the Astrologer."""
-    speech: str = Field(description="The natural language response to speak to the user. Keep it wise, mystical, but under 3 sentences.")
+    speech: str = Field(description="Natural language response. No emojis. Professional tone.")
     ui: UIControl = Field(description="UI control metadata.")
 
-# --- 2. Helper Functions ---
-
+# --- 2. Helpers ---
 def _format_history(history):
     return "\n".join([f"{entry.role.upper()}: {entry.message}" for entry in history])
 
-def _extract_chart_insights(chart_data: dict) -> str:
+def _format_chart_human_readable(chart_data: dict) -> str:
     """
-    Flatten the complex chart JSON into a readable summary for the LLM.
-    We convert the dictionary to a pretty-printed JSON string so Gemini reads it clearly.
+    Converts raw JSON into a prioritized list so the LLM sees HOUSES first.
+    Format: "Planet Name: House X (Sign Y)"
     """
     try:
-        # We assume chart_data is the structure returned by vedic_calculator
-        return json.dumps(chart_data, indent=2, default=str)
+        lines = []
+        # 1. Ascendant
+        asc = chart_data.get('ascendant', {})
+        lines.append(f"ASCENDANT (Lagna): House 1 ({asc.get('sign', 'Unknown')})")
+        
+        # 2. Planets
+        planets = chart_data.get('planets', {})
+        for name, data in planets.items():
+            # Capitalize name (e.g. "sun" -> "Sun")
+            p_name = name.title()
+            house = data.get('house', '?')
+            sign = data.get('sign', '?')
+            lines.append(f"- {p_name}: Placed in HOUSE {house} ({sign})")
+            
+        return "\n".join(lines)
     except Exception:
         return str(chart_data)
+
+def _get_dasha_context(chart_data: dict) -> str:
+    try:
+        moon_lon = chart_data.get('planets', {}).get('moon', {}).get('longitude', 0)
+        dasha_info = get_current_dasha(moon_lon, "2000-01-01") 
+        return f"Current Dasha Lord: {dasha_info.get('birth_dasha_lord')} (This planet is currently dictating the user's timeline)."
+    except Exception:
+        return "Dasha Context: Unknown"
 
 # --- 3. Main Logic ---
 
 def get_astro_response(session: GameSession) -> dict:
-    """
-    Orchestrates: RAG (Book) + Math (Chart) -> Gemini -> JSON Output
-    """
     try:
-        # A. Context Preparation
         user_query = session.conversation_history[-1].message if session.conversation_history else "General reading"
         
-        # 1. RAG: Search BPHS/Books for rules using HyDE logic
-        logger.info(f"🔍 Searching Ancient Texts for: {user_query}")
+        # 1. RAG
+        logger.info(f"🔍 Searching Texts for: {user_query}")
         retrieved_context = rag_service.get_relevant_context(user_query)
         
-        # 2. Chart: Get user's calculated math
-        chart_summary = _extract_chart_insights(session.chart_data)
+        # 2. Formatted Chart (House First)
+        chart_summary = _format_chart_human_readable(session.chart_data)
+        
+        # 3. Time
+        dasha_summary = _get_dasha_context(session.chart_data)
 
-        # B. Prompt Engineering
+        # 4. The "Professional" Prompt
         prompt = f"""
-        You are Acharya Gemini, a Vedic Astrologer.
-        
-        USER'S KUNDLI (CALCULATED POSITIONS):
+        You are Acharya Gemini, a Vedic Astrologer. 
+        You speak with the gravity of a sage, not a chatbot.
+
+        ### 1. THE USER'S KUNDLI (DATA)
         {chart_summary}
-        
-        ANCIENT TEXTS (AUTHORITATIVE RULES FROM BPHS/SARAVALI):
+        *NOTE: 'House 6' = Enemies/Service/Job. 'House 10' = Career/Status. 'House 12' = Loss/Foreign.*
+
+        ### 2. TIMING (DASHA)
+        {dasha_summary}
+
+        ### 3. ANCIENT RULES (RAG)
         {retrieved_context}
-        
-        CONVERSATION HISTORY:
+
+        ### 4. HISTORY
         {_format_history(session.conversation_history)}
+
+        ### 5. STRICT INSTRUCTIONS
+        User Question: "{user_query}"
+        ### INSTRUCTIONS
+        User Question: "{user_query}"
         
-        INSTRUCTIONS:
-        1. **Analyze:** Compare the User's Chart with the Ancient Rules provided above.
-        2. **Speak:** Answer the user's question. 
-           - Be kind, mystical, and accurate.
-           - Quote the text if applicable (e.g., "The ancient texts say...").
-           - Do not be fatalistic; always offer guidance.
-        3. **Visuals (UI Control):** - If you mention a specific House (e.g. 7th) or Planet (e.g. Sun), add it to `highlight_houses`/`highlight_planets`.
-           - If you predict a specific future time, set `transit_date`.
-           - If you suggest a fix, set `suggested_remedy`.
+        1. **Keep it Short:** You are on a Voice Call. Speak in **max 3-4 sentences**.
+        2. **Be Direct:** No bullet points. No "Let's examine...". Just give the answer.
+        3. **Structure:** [Observation] -> [Judgment] -> [Remedy].
+        4. **Visuals:** Fill the UI fields (Houses/Planets/Remedy).
         
-        User Question: {user_query}
+        **Tone:** Mystical, Empathetic, Concise.
+        
+        **Tone & Style:**
+        - **NO EMOJIS.** Do not use 💊, ✨, or any icons.
+        - **Speak in Terms of Houses (Bhavas):** Do not just say "Mercury in Sagittarius." Say "Mercury is sitting in your 12th House of Loss..."
+        - **Be Diagnostic:** Explain the *logic*. Why is the job delayed? (e.g., "Because the Lord of your 10th house is weak...").
+        - **Remedies:** If you suggest a remedy, explain *why* it works. (e.g., "This mantra strengthens Jupiter to remove the 12th house negativity").
+
+        **Structure:**
+        1. **Observation:** "I see [Planet] is in your [House Number]..."
+        2. **Consequence:** "Since this is the house of [Meaning], it is causing..."
+        3. **Remedy:** "To fix this, I suggest [Remedy]..."
+
+        **Visuals:**
+        - Fill `suggested_remedy` if applicable.
+        - Add House numbers to `highlight_houses`.
         """
 
-        # C. Call Gemini with JSON Mode
+        # C. Call Gemini
         response = llm_client.models.generate_content(
             model="gemini-2.0-flash",
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
                 response_schema=AstroResponse,
-                temperature=0.6 # Balanced for creativity + facts
+                temperature=0.6 
             )
         )
         
-        # D. Parse Response
+        # D. Parse
         if hasattr(response, 'parsed') and response.parsed:
              result = response.parsed
         else:
-             # Fallback manual parse if the SDK doesn't parse automatically
              clean_json = response.text.replace("```json", "").replace("```", "")
              result = AstroResponse.model_validate_json(clean_json)
 
         logger.info(f"🗣️ Acharya: {result.speech}")
-        logger.info(f"🎨 UI Actions: {result.ui}")
-
-        # Return dictionary for GameSessionManager
+        
         return result.model_dump()
 
     except Exception as e:
         logger.error(f"LLM Logic Error: {e}")
-        # Fail-safe response structure so the app doesn't crash
         return {
-            "speech": "The cosmic frequencies are currently interrupted. Please ask me again.",
-            "ui": {
-                "highlight_houses": [], 
-                "highlight_planets": [],
-                "transit_date": None,
-                "suggested_remedy": None
-            }
+            "speech": "I am analyzing the planetary positions. Please allow me a moment to recalculate.",
+            "ui": {"highlight_houses": [], "highlight_planets": []}
         }

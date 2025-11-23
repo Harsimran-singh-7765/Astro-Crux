@@ -2,21 +2,20 @@
 import sys
 import os
 
-# Add the project root to python path so we can import app modules
+# Add project root to path
 sys.path.append(os.getcwd())
 
 from app.services.rag_service import rag_service
 
-def test_brain():
-    print("🔮 Testing Acharya's Knowledge from BPHS...")
+def test_remedy():
+    print("🔮 Testing Acharya's Medicine Cabinet...")
     
-    # 1. Ask a specific question covered in BPHS
-    query = "What happens if Sun is in the 1st House?"
+    # Question specific to your remedies.txt file
+    query = "What is the remedy for a weak Sun or lack of confidence?"
     
     print(f"\n❓ Question: {query}")
-    print("... Thinking (Generating HyDE + Searching Vector DB) ...")
+    print("... Thinking ...")
     
-    # 2. Get Context
     context = rag_service.get_relevant_context(query)
     
     print("\n📚 RAG RESULT:")
@@ -24,10 +23,11 @@ def test_brain():
     print(context)
     print("-" * 50)
 
-    if "BPHS" in context or "Brihat" in context or "bphs.txt" in context:
-        print("\n✅ SUCCESS: The system is reading from the book!")
+    # Check if it pulled from the correct file
+    if "remedies.txt" in context or "Gayatri Mantra" in context:
+        print("\n✅ SUCCESS: The system found the CURE!")
     else:
-        print("\n⚠️ WARNING: Did not see 'BPHS' in source. Check if ingestion worked.")
+        print("\n⚠️ WARNING: It missed the remedy book.")
 
 if __name__ == "__main__":
-    test_brain()
+    test_remedy()
