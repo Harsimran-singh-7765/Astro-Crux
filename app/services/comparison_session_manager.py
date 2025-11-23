@@ -126,10 +126,6 @@ Divine Remedies: {comparison_data.get('recommendations', '')}
                 "ui_control": comparison_data.get("ui", {})
             })
             
-            # Stream audio
-            logger.info(f"[{self.session_id}] Streaming audio response")
-            await self._stream_ai_audio(response_text)
-            
             logger.info(f"[{self.session_id}] Comparison complete")
             await self._send_json({"status": "comparison_finished"})
             

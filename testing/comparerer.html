@@ -298,10 +298,42 @@
 
         .hidden { display: none !important; }
 
-        @media (max-width: 768px) {
-            .setup-panel { max-width: 100%; padding: 1.5rem; }
-            .comparison-charts { grid-template-columns: 1fr; }
-            .scores-grid { grid-template-columns: 1fr; }
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .loading-spinner.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(212, 175, 55, 0.2);
+            border-top: 4px solid var(--gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--gold);
+            font-size: 1.1rem;
+            letter-spacing: 2px;
         }
     </style>
 </head>
@@ -311,6 +343,12 @@
         <h1>⚖️ KUNDLI COMPARERER</h1>
         <p class="breadcrumb"><a onclick="goHome()">← Back to Home</a></p>
     </header>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">CALCULATING CHARTS...</div>
+    </div>
 
     <div class="main-container">
         
@@ -439,8 +477,6 @@
 
     <script>
         let socket = null;
-        let audioContext = null;
-        let nextStartTime = 0;
 
         function goHome() {
             window.location.href = 'index.html';
@@ -511,6 +547,12 @@
 
         function connectComparison(sessionId, name1, name2) {
             console.log("[WS] Connecting to comparison session...");
+            
+            // Show loading spinner
+            const spinner = document.getElementById('loadingSpinner');
+            spinner.classList.add('active');
+            document.getElementById('loadingText').innerText = 'ANALYZING COSMIC CONNECTION...';
+
             socket = new WebSocket(`ws://127.0.0.1:8000/api/v1/comparison/ws/${sessionId}`);
             socket.binaryType = 'arraybuffer';
 
@@ -524,19 +566,19 @@
                     const msg = JSON.parse(event.data);
                     console.log("[WS] Received:", msg.status);
                     handleComparisonMessage(msg);
-                } else {
-                    playAudioChunk(event.data);
                 }
             };
 
             socket.onerror = (error) => {
                 console.error("[WS] Error:", error);
                 updateStatus("CONNECTION ERROR");
+                spinner.classList.remove('active');
             };
 
             socket.onclose = () => {
                 console.log("[WS] Connection closed");
                 updateStatus("ANALYSIS COMPLETE");
+                spinner.classList.remove('active');
             };
         }
 
@@ -567,6 +609,9 @@
         }
 
         function displayComparisonResults(analysis, scores) {
+            // Hide loading spinner
+            document.getElementById('loadingSpinner').classList.remove('active');
+
             // Update scores
             document.getElementById('scoreOverall').innerText = Math.round(scores.overall);
             document.getElementById('scoreEmotional').innerText = Math.round(scores.emotional);
@@ -574,30 +619,49 @@
             document.getElementById('scoreFinancial').innerText = Math.round(scores.financial);
             document.getElementById('scorePhysical').innerText = Math.round(scores.physical);
 
-            // Build analysis sections
+            // Build condensed analysis sections
             const container = document.getElementById('analysisContainer');
             container.innerHTML = '';
 
             const sections = [
-                { title: '💞 Summary', content: analysis.summary },
-                { title: '💭 Emotional Harmony', content: analysis.emotional_analysis },
-                { title: '🧠 Intellectual Connection', content: analysis.intellectual_analysis },
-                { title: '💰 Financial Prosperity', content: analysis.financial_analysis },
-                { title: '🔥 Physical Attraction', content: analysis.physical_analysis },
-                { title: '💪 Strengths Together', content: analysis.strengths },
-                { title: '⚡ Challenges to Navigate', content: analysis.challenges },
-                { title: '🙏 Divine Remedies', content: analysis.recommendations }
+                { title: '💞 Summary', content: analysis.summary, collapsed: false },
+                { title: '💭 Emotional', content: analysis.emotional_analysis, collapsed: true },
+                { title: '🧠 Intellectual', content: analysis.intellectual_analysis, collapsed: true },
+                { title: '💰 Financial', content: analysis.financial_analysis, collapsed: true },
+                { title: '🔥 Physical', content: analysis.physical_analysis, collapsed: true },
+                { title: '💪 Strengths', content: analysis.strengths, collapsed: true },
+                { title: '⚡ Challenges', content: analysis.challenges, collapsed: true },
+                { title: '🙏 Remedies', content: analysis.recommendations, collapsed: true }
             ];
 
-            sections.forEach(section => {
+            sections.forEach((section, idx) => {
                 const div = document.createElement('div');
                 div.className = 'analysis-section';
+                
+                const isCollapsed = section.collapsed;
+                const preview = section.content.substring(0, 150) + (section.content.length > 150 ? '...' : '');
+                
                 div.innerHTML = `
-                    <h3>${section.title}</h3>
-                    <p>${section.content}</p>
+                    <h3 style="cursor: pointer; user-select: none;" onclick="toggleAnalysis(this)">
+                        ${section.title}
+                        <span style="font-size: 0.8rem; color: #888;">${isCollapsed ? '▶' : '▼'}</span>
+                    </h3>
+                    <p style="display: ${isCollapsed ? 'none' : 'block'};" class="analysis-content">
+                        ${section.content}
+                    </p>
                 `;
                 container.appendChild(div);
             });
+        }
+
+        function toggleAnalysis(titleEl) {
+            const contentEl = titleEl.nextElementSibling;
+            const isHidden = contentEl.style.display === 'none';
+            contentEl.style.display = isHidden ? 'block' : 'none';
+            
+            // Update arrow
+            const arrow = titleEl.querySelector('span');
+            if (arrow) arrow.textContent = isHidden ? '▼' : '▶';
         }
 
         function drawChart(chartData, svgId) {
@@ -663,29 +727,6 @@
             border.setAttribute("stroke", "#d4af37");
             border.setAttribute("stroke-width", "2");
             svg.appendChild(border);
-        }
-
-        function initAudioCtx() {
-            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
-        }
-
-        function playAudioChunk(buffer) {
-            console.log(`[Audio] Playing chunk: ${buffer.byteLength} bytes`);
-            initAudioCtx();
-            const float32 = new Float32Array(new Int16Array(buffer).length);
-            const int16 = new Int16Array(buffer);
-            for (let i = 0; i < int16.length; i++) float32[i] = int16[i] / 32768.0;
-
-            const audioBuf = audioContext.createBuffer(1, float32.length, 24000);
-            audioBuf.getChannelData(0).set(float32);
-            
-            const source = audioContext.createBufferSource();
-            source.buffer = audioBuf;
-            source.connect(audioContext.destination);
-            
-            let start = Math.max(audioContext.currentTime, nextStartTime);
-            source.start(start);
-            nextStartTime = start + audioBuf.duration;
         }
 
         function updateStatus(txt) {
