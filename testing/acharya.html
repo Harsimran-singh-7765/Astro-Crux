@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astro Crux | Divine Intelligence</title>
+    <style>
+        :root {
+            --space-black: #050505;
+            --deep-void: #0a0a12;
+            --starlight: #e0e0e0;
+            --gold: #d4af37; /* Vedic Gold */
+            --gold-dim: #8a7018;
+            --mystic-blue: #1a1a2e;
+            --accent-glow: rgba(212, 175, 55, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--space-black);
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 3px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 3px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            background-position: 0 0, 40px 60px, 130px 270px;
+            color: var(--starlight);
+            font-family: 'Cinzel', serif; /* Or standard serif if unavailable */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid var(--gold-dim);
+            background: rgba(10, 10, 18, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        h1 {
+            font-weight: 400;
+            letter-spacing: 4px;
+            color: var(--gold);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 80px);
+        }
+
+        /* Setup Panel (Left) */
+        .panel {
+            padding: 2rem;
+            transition: all 0.5s ease;
+        }
+
+        #setupPanel {
+            width: 100%;
+            max-width: 400px;
+            margin: auto;
+            background: var(--deep-void);
+            border: 1px solid var(--gold-dim);
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        }
+
+        .input-group { margin-bottom: 1.5rem; }
+        
+        label { display: block; color: var(--gold); margin-bottom: 0.5rem; font-size: 0.8rem; letter-spacing: 1px; }
+        
+        input {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--gold-dim);
+            color: var(--gold);
+            padding: 10px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, #2c2c2c, #000);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-family: inherit;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: var(--gold);
+            color: #000;
+            box-shadow: 0 0 15px var(--gold);
+        }
+
+        /* Game Area */
+        #gamePanel {
+            display: flex;
+            width: 100%;
+            display: none; /* Hidden by default */
+            position: relative;
+        }
+
+        /* Constellation Canvas Background */
+        #constellationCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        #constellationCanvas.active {
+            opacity: 1;
+        }
+
+        /* Left: The Chart */
+        .chart-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* THE NORTH INDIAN KUNDLI (SVG) */
+        .kundli-container {
+            width: 500px;
+            height: 500px;
+            position: relative;
+            filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.1));
+        }
+
+        svg text {
+            font-family: sans-serif;
+            fill: var(--starlight);
+            font-size: 12px;
+            font-weight: bold;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+
+        .house-poly {
+            fill: rgba(0,0,0,0.6);
+            stroke: var(--gold);
+            stroke-width: 1.5;
+            transition: fill 0.5s ease, stroke 0.5s ease;
+        }
+
+        /* Highlight Animation */
+        .house-poly.highlight {
+            fill: rgba(212, 175, 55, 0.3);
+            stroke: #fff;
+            stroke-width: 3;
+            filter: drop-shadow(0 0 15px var(--gold));
+        }
+
+        /* Right: Chat & Transcript */
+        .comms-area {
+            width: 350px;
+            border-left: 1px solid var(--gold-dim);
+            background: rgba(5, 5, 5, 0.85);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+
+        #transcript {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .msg { margin-bottom: 1rem; border-left: 2px solid var(--gold-dim); padding-left: 10px; }
+        .msg.user { border-color: #fff; color: #aaa; }
+        .msg.acharya { border-color: var(--gold); color: var(--gold); }
+
+        /* Status Bar & Mic */
+        .controls {
+            padding: 1.5rem;
+            border-top: 1px solid var(--gold-dim);
+            text-align: center;
+        }
+
+        .status-text {
+            color: #888;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* AI Speaking Glow Effect */
+        .speaking-glow {
+            animation: borderPulse 1.5s infinite alternate;
+        }
+
+        @keyframes borderPulse {
+            from { box-shadow: inset 0 0 10px var(--gold-dim); }
+            to { box-shadow: inset 0 0 40px var(--gold); }
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ASTRO CRUX</h1>
+    </header>
+
+    <div class="main-container">
+        
+        <div id="setupPanel" class="panel">
+            <div class="input-group">
+                <label>Name</label>
+                <input type="text" id="userName" value="Arjun">
+            </div>
+            <div class="input-group">
+                <label>Birth Date</label>
+                <input type="date" id="birthDate" value="2000-01-01">
+            </div>
+            <div class="input-group">
+                <label>Birth Time</label>
+                <input type="time" id="birthTime" value="12:00">
+            </div>
+            <div class="input-group">
+                <label>Place</label>
+                <input type="text" id="birthPlace" value="New Delhi">
+            </div>
+            <button id="connectBtn" onclick="startSession()">ENTER THE VOID</button>
+        </div>
+
+        <div id="gamePanel">
+            <!-- Constellation Canvas - ADD THIS -->
+            <canvas id="constellationCanvas"></canvas>
+            
+            <div class="chart-area" id="chartContainer">
+                <div class="kundli-container">
+                    <svg id="kundliSvg" viewBox="0 0 400 400"></svg>
+                </div>
+            </div>
+
+            <div class="comms-area">
+                <div id="transcript"></div>
+                <div class="controls">
+                    <div id="status" class="status-text">Awaiting Connection...</div>
+                    <button id="micBtn" onmousedown="startMic()" onmouseup="stopMic()">HOLD TO SPEAK</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script src="constellation.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

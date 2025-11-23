@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kundli Comparerer | Astro Crux</title>
+    <style>
+        :root {
+            --space-black: #050505;
+            --deep-void: #0a0a12;
+            --starlight: #e0e0e0;
+            --gold: #d4af37;
+            --gold-dim: #8a7018;
+            --mystic-blue: #1a1a2e;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--space-black);
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 3px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 3px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            background-position: 0 0, 40px 60px, 130px 270px;
+            color: var(--starlight);
+            font-family: 'Cinzel', serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            padding: 2rem 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid var(--gold-dim);
+            background: rgba(10, 10, 18, 0.95);
+            backdrop-filter: blur(5px);
+        }
+
+        h1 {
+            font-weight: 400;
+            letter-spacing: 4px;
+            color: var(--gold);
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+            margin-bottom: 0.5rem;
+        }
+
+        .breadcrumb {
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        .breadcrumb a {
+            color: var(--gold);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .breadcrumb a:hover {
+            text-shadow: 0 0 10px var(--gold);
+        }
+
+        /* Main Container */
+        .main-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2rem;
+        }
+
+        .coming-soon {
+            text-align: center;
+            max-width: 600px;
+            padding: 3rem;
+            background: rgba(26, 26, 46, 0.3);
+            border: 2px solid var(--gold);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 1s ease-out;
+        }
+
+        .coming-soon h2 {
+            font-size: 2.5rem;
+            color: var(--gold);
+            margin-bottom: 1rem;
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .coming-soon p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #bbb;
+            margin-bottom: 1.5rem;
+            font-family: 'Georgia', serif;
+        }
+
+        .feature-list {
+            text-align: left;
+            margin: 2rem 0;
+            padding: 2rem;
+            background: rgba(10, 10, 18, 0.6);
+            border-left: 3px solid var(--gold);
+            border-radius: 4px;
+        }
+
+        .feature-list h3 {
+            color: var(--gold);
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .feature-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 0.8rem 0;
+            color: #aaa;
+            border-bottom: 1px solid var(--gold-dim);
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-list li::before {
+            content: "✦ ";
+            color: var(--gold);
+            margin-right: 0.5rem;
+        }
+
+        .back-button {
+            margin-top: 2rem;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #2c2c2c, #000);
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+            font-size: 0.95rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .back-button:hover {
+            background: linear-gradient(135deg, var(--gold), #8a7018);
+            color: #000;
+            box-shadow: 0 0 20px var(--gold);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            border-top: 1px solid var(--gold-dim);
+            background: rgba(10, 10, 18, 0.95);
+            color: #666;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>⚖️ KUNDLI COMPARERER</h1>
+        <p class="breadcrumb"><a onclick="goHome()">← Back to Astro Crux</a></p>
+    </header>
+
+    <div class="main-container">
+        <div class="coming-soon">
+            <h2>🚀 Coming Soon</h2>
+            
+            <p>
+                The Kundli Comparerer is currently under development. This feature will revolutionize 
+                how people understand relationship compatibility through Vedic astrology.
+            </p>
+
+            <div class="feature-list">
+                <h3>What's Coming:</h3>
+                <ul>
+                    <li>Compare two birth charts in detail</li>
+                    <li>Synastry analysis with planetary aspects</li>
+                    <li>Compatibility scoring across multiple dimensions</li>
+                    <li>Gunas matching (Varna, Vashya, Tara, Yoni, Graha, Bhuta, Nadi)</li>
+                    <li>Timing analysis for auspicious moments</li>
+                    <li>Personalized advice from Acharya based on chart comparison</li>
+                    <li>Visual overlay of both charts for easy comparison</li>
+                </ul>
+            </div>
+
+            <p>
+                <strong>Status:</strong> Our team is crafting this feature with meticulous attention to 
+                Vedic principles. It will be available very soon to help you discover the cosmic harmony 
+                between two souls.
+            </p>
+
+            <button class="back-button" onclick="goHome()">← Return to Home</button>
+        </div>
+    </div>
+
+    <footer>
+        <div>© 2025 Astro Crux | Vedic Astrology meets AI</div>
+    </footer>
+
+    <script>
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+    </script>
+
+</body>
+</html>
