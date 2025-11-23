@@ -292,10 +292,10 @@
             </div>
 
             <div class="button-wrapper">
-                <button class="nav-button" disabled style="opacity: 0.5; cursor: not-allowed;" title="Coming Soon">
+                <button class="nav-button" onclick="goToComparison()">
                     ⚖️ Kundli Comparerer
                 </button>
-                <span class="upcoming-badge">🚀 Coming Soon</span>
+                <span class="button-label">Compare Two Charts</span>
             </div>
 
         </div>
@@ -310,6 +310,10 @@
     <script>
         function goToAcharya() {
             window.location.href = 'acharya.html';
+        }
+
+        function goToComparison() {
+            window.location.href = 'comparerer.html';
         }
     </script>
 

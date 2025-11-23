@@ -12,6 +12,7 @@
             --gold: #d4af37;
             --gold-dim: #8a7018;
             --mystic-blue: #1a1a2e;
+            --accent-glow: rgba(212, 175, 55, 0.15);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -26,17 +27,18 @@
             background-position: 0 0, 40px 60px, 130px 270px;
             color: var(--starlight);
             font-family: 'Cinzel', serif;
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
         /* Header */
         header {
-            padding: 2rem 1.5rem;
+            padding: 1.5rem;
             text-align: center;
             border-bottom: 1px solid var(--gold-dim);
-            background: rgba(10, 10, 18, 0.95);
+            background: rgba(10, 10, 18, 0.9);
             backdrop-filter: blur(5px);
         }
 
@@ -44,18 +46,19 @@
             font-weight: 400;
             letter-spacing: 4px;
             color: var(--gold);
-            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
             margin-bottom: 0.5rem;
         }
 
         .breadcrumb {
             color: #888;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         .breadcrumb a {
             color: var(--gold);
             text-decoration: none;
+            cursor: pointer;
             transition: all 0.3s;
         }
 
@@ -63,86 +66,102 @@
             text-shadow: 0 0 10px var(--gold);
         }
 
-        /* Main Container */
+        /* Main Layout */
         .main-container {
-            flex: 1;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 3rem 2rem;
+            flex: 1;
+            height: calc(100vh - 80px);
         }
 
-        .coming-soon {
-            text-align: center;
-            max-width: 600px;
+        /* Setup Panel */
+        .setup-panel {
+            width: 100%;
+            max-width: 900px;
+            margin: auto;
             padding: 3rem;
-            background: rgba(26, 26, 46, 0.3);
-            border: 2px solid var(--gold);
+            background: rgba(10, 10, 18, 0.95);
+            border: 1px solid var(--gold-dim);
+            overflow-y: auto;
             border-radius: 8px;
-            backdrop-filter: blur(10px);
-            animation: fadeIn 1s ease-out;
         }
 
-        .coming-soon h2 {
-            font-size: 2.5rem;
+        .setup-panel.hidden {
+            display: none;
+        }
+
+        .form-title {
+            font-size: 1.8rem;
             color: var(--gold);
-            margin-bottom: 1rem;
+            text-align: center;
+            margin-bottom: 2rem;
             letter-spacing: 2px;
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
         }
 
-        .coming-soon p {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: #bbb;
-            margin-bottom: 1.5rem;
-            font-family: 'Georgia', serif;
-        }
-
-        .feature-list {
-            text-align: left;
-            margin: 2rem 0;
+        .person-section {
+            margin-bottom: 2.5rem;
             padding: 2rem;
-            background: rgba(10, 10, 18, 0.6);
-            border-left: 3px solid var(--gold);
+            border: 1px solid var(--gold-dim);
+            border-radius: 6px;
+            background: rgba(26, 26, 46, 0.3);
+        }
+
+        .person-section h2 {
+            color: var(--gold);
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--gold-dim);
+            padding-bottom: 0.8rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            color: var(--gold);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        input {
+            background: #000;
+            border: 1px solid var(--gold-dim);
+            color: var(--starlight);
+            padding: 10px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s;
             border-radius: 4px;
         }
 
-        .feature-list h3 {
-            color: var(--gold);
-            margin-bottom: 1rem;
-            letter-spacing: 1px;
+        input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
         }
 
-        .feature-list ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .feature-list li {
-            padding: 0.8rem 0;
-            color: #aaa;
-            border-bottom: 1px solid var(--gold-dim);
-        }
-
-        .feature-list li:last-child {
-            border-bottom: none;
-        }
-
-        .feature-list li::before {
-            content: "✦ ";
-            color: var(--gold);
-            margin-right: 0.5rem;
-        }
-
-        .back-button {
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
             margin-top: 2rem;
+        }
+
+        button {
             padding: 12px 30px;
-            background: linear-gradient(135deg, #2c2c2c, #000);
-            border: 2px solid var(--gold);
+            background: linear-gradient(45deg, #2c2c2c, #000);
+            border: 1px solid var(--gold);
             color: var(--gold);
-            font-family: 'Cinzel', serif;
-            font-size: 0.95rem;
+            font-family: inherit;
             letter-spacing: 2px;
             cursor: pointer;
             transition: all 0.3s;
@@ -150,30 +169,139 @@
             text-transform: uppercase;
         }
 
-        .back-button:hover {
-            background: linear-gradient(135deg, var(--gold), #8a7018);
+        button:hover:not(:disabled) {
+            background: var(--gold);
             color: #000;
-            box-shadow: 0 0 20px var(--gold);
+            box-shadow: 0 0 15px var(--gold);
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
-        footer {
+        /* Comparison Results */
+        .results-panel {
+            display: none;
+            width: 100%;
+            overflow-y: auto;
+            padding: 2rem;
+            flex-direction: column;
+        }
+
+        .results-panel.active {
+            display: flex;
+        }
+
+        .comparison-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            border: 1px solid var(--gold-dim);
+            border-radius: 6px;
+            padding: 1.5rem;
+            background: rgba(26, 26, 46, 0.3);
+        }
+
+        .chart-card h3 {
+            color: var(--gold);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .kundli-container {
+            width: 100%;
+            aspect-ratio: 1;
+            border: 1px solid var(--gold-dim);
+            border-radius: 4px;
+        }
+
+        .scores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+            padding: 2rem;
+            background: rgba(26, 26, 46, 0.3);
+            border-radius: 6px;
+        }
+
+        .score-card {
             text-align: center;
             padding: 1.5rem;
-            border-top: 1px solid var(--gold-dim);
-            background: rgba(10, 10, 18, 0.95);
-            color: #666;
-            font-size: 0.8rem;
+            border: 1px solid var(--gold-dim);
+            border-radius: 6px;
+        }
+
+        .score-label {
+            color: #888;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .score-value {
+            font-size: 2.5rem;
+            color: var(--gold);
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .score-percent {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 0.5rem;
+        }
+
+        .analysis-section {
+            margin: 2rem 0;
+            padding: 2rem;
+            background: rgba(26, 26, 46, 0.3);
+            border-left: 3px solid var(--gold);
+            border-radius: 6px;
+        }
+
+        .analysis-section h3 {
+            color: var(--gold);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .analysis-section p {
+            color: #bbb;
+            line-height: 1.8;
+            font-family: 'Georgia', serif;
+        }
+
+        .transcript-area {
+            flex: 1;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--gold-dim);
+            border-radius: 6px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+
+        .status-text {
+            color: #888;
+            font-size: 0.85rem;
+            text-align: center;
+            margin: 1rem 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .setup-panel { max-width: 100%; padding: 1.5rem; }
+            .comparison-charts { grid-template-columns: 1fr; }
+            .scores-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -181,48 +309,387 @@
 
     <header>
         <h1>⚖️ KUNDLI COMPARERER</h1>
-        <p class="breadcrumb"><a onclick="goHome()">← Back to Astro Crux</a></p>
+        <p class="breadcrumb"><a onclick="goHome()">← Back to Home</a></p>
     </header>
 
     <div class="main-container">
-        <div class="coming-soon">
-            <h2>🚀 Coming Soon</h2>
-            
-            <p>
-                The Kundli Comparerer is currently under development. This feature will revolutionize 
-                how people understand relationship compatibility through Vedic astrology.
-            </p>
+        
+        <!-- Setup Panel -->
+        <div id="setupPanel" class="setup-panel">
+            <div class="form-title">Enter Birth Details of Both Persons</div>
 
-            <div class="feature-list">
-                <h3>What's Coming:</h3>
-                <ul>
-                    <li>Compare two birth charts in detail</li>
-                    <li>Synastry analysis with planetary aspects</li>
-                    <li>Compatibility scoring across multiple dimensions</li>
-                    <li>Gunas matching (Varna, Vashya, Tara, Yoni, Graha, Bhuta, Nadi)</li>
-                    <li>Timing analysis for auspicious moments</li>
-                    <li>Personalized advice from Acharya based on chart comparison</li>
-                    <li>Visual overlay of both charts for easy comparison</li>
-                </ul>
+            <!-- Person 1 -->
+            <div class="person-section">
+                <h2>👤 Person 1</h2>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Name</label>
+                        <input type="text" id="person1Name" placeholder="e.g., Arjun" value="Arjun">
+                    </div>
+                    <div class="input-group">
+                        <label>Birth Date</label>
+                        <input type="date" id="person1Date" value="2000-01-01">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Birth Time</label>
+                        <input type="time" id="person1Time" value="12:00">
+                    </div>
+                    <div class="input-group">
+                        <label>Birth Place</label>
+                        <input type="text" id="person1Place" placeholder="e.g., New Delhi" value="New Delhi">
+                    </div>
+                </div>
             </div>
 
-            <p>
-                <strong>Status:</strong> Our team is crafting this feature with meticulous attention to 
-                Vedic principles. It will be available very soon to help you discover the cosmic harmony 
-                between two souls.
-            </p>
+            <!-- Person 2 -->
+            <div class="person-section">
+                <h2>👤 Person 2</h2>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Name</label>
+                        <input type="text" id="person2Name" placeholder="e.g., Priya" value="Priya">
+                    </div>
+                    <div class="input-group">
+                        <label>Birth Date</label>
+                        <input type="date" id="person2Date" value="2000-06-15">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Birth Time</label>
+                        <input type="time" id="person2Time" value="14:30">
+                    </div>
+                    <div class="input-group">
+                        <label>Birth Place</label>
+                        <input type="text" id="person2Place" placeholder="e.g., Mumbai" value="Mumbai">
+                    </div>
+                </div>
+            </div>
 
-            <button class="back-button" onclick="goHome()">← Return to Home</button>
+            <div class="button-group">
+                <button id="compareBtn" onclick="startComparison()">🔮 COMPARE CHARTS</button>
+                <button onclick="goHome()">← GO BACK</button>
+            </div>
         </div>
+
+        <!-- Results Panel -->
+        <div id="resultsPanel" class="results-panel">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <h2 style="color: var(--gold); font-size: 1.5rem;">Compatibility Analysis</h2>
+                <p class="status-text" id="statusText">Calculating...</p>
+            </div>
+
+            <!-- Charts Side by Side -->
+            <div class="comparison-charts">
+                <div class="chart-card">
+                    <h3 id="chart1Title">Person 1</h3>
+                    <div class="kundli-container">
+                        <svg id="chart1Svg" viewBox="0 0 400 400"></svg>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3 id="chart2Title">Person 2</h3>
+                    <div class="kundli-container">
+                        <svg id="chart2Svg" viewBox="0 0 400 400"></svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compatibility Scores -->
+            <div class="scores-grid">
+                <div class="score-card">
+                    <div class="score-label">Overall</div>
+                    <div class="score-value" id="scoreOverall">0</div>
+                    <div class="score-percent">% Compatible</div>
+                </div>
+                <div class="score-card">
+                    <div class="score-label">Emotional</div>
+                    <div class="score-value" id="scoreEmotional">0</div>
+                    <div class="score-percent">% Harmony</div>
+                </div>
+                <div class="score-card">
+                    <div class="score-label">Intellectual</div>
+                    <div class="score-value" id="scoreIntellectual">0</div>
+                    <div class="score-percent">% Connection</div>
+                </div>
+                <div class="score-card">
+                    <div class="score-label">Financial</div>
+                    <div class="score-value" id="scoreFinancial">0</div>
+                    <div class="score-percent">% Prosperity</div>
+                </div>
+                <div class="score-card">
+                    <div class="score-label">Physical</div>
+                    <div class="score-value" id="scorePhysical">0</div>
+                    <div class="score-percent">% Attraction</div>
+                </div>
+            </div>
+
+            <!-- Analysis Sections -->
+            <div id="analysisContainer"></div>
+
+            <!-- Audio Transcript -->
+            <div class="transcript-area" id="transcriptArea"></div>
+
+            <button onclick="goHome()" style="margin-top: 1rem;">← NEW COMPARISON</button>
+        </div>
+
     </div>
 
-    <footer>
-        <div>© 2025 Astro Crux | Vedic Astrology meets AI</div>
-    </footer>
-
     <script>
+        let socket = null;
+        let audioContext = null;
+        let nextStartTime = 0;
+
         function goHome() {
             window.location.href = 'index.html';
+        }
+
+        async function startComparison() {
+            console.log("[Comparison] Starting comparison...");
+            const btn = document.getElementById('compareBtn');
+            btn.disabled = true;
+            btn.innerText = "CALCULATING...";
+
+            try {
+                const person1 = {
+                    name: document.getElementById('person1Name').value,
+                    date: document.getElementById('person1Date').value,
+                    time: document.getElementById('person1Time').value,
+                    location: document.getElementById('person1Place').value
+                };
+
+                const person2 = {
+                    name: document.getElementById('person2Name').value,
+                    date: document.getElementById('person2Date').value,
+                    time: document.getElementById('person2Time').value,
+                    location: document.getElementById('person2Place').value
+                };
+
+                console.log("[Comparison] Sending request:", { person1, person2 });
+
+                const res = await fetch('http://127.0.0.1:8000/api/v1/comparison/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ person1, person2 })
+                });
+
+                const data = await res.json();
+                
+                if (data.error) {
+                    alert("Error: " + data.error);
+                    btn.disabled = false;
+                    btn.innerText = "COMPARE CHARTS";
+                    return;
+                }
+
+                console.log("[Comparison] Session started:", data.session_id);
+
+                // Update titles
+                document.getElementById('chart1Title').innerText = person1.name;
+                document.getElementById('chart2Title').innerText = person2.name;
+
+                // Draw both charts
+                drawChart(data.chart1, 'chart1Svg');
+                drawChart(data.chart2, 'chart2Svg');
+
+                // Show results panel, hide setup
+                document.getElementById('setupPanel').classList.add('hidden');
+                document.getElementById('resultsPanel').classList.add('active');
+
+                // Connect WebSocket for streaming analysis
+                connectComparison(data.session_id, person1.name, person2.name);
+
+            } catch (e) {
+                console.error("[Comparison] Error:", e);
+                alert("Error: " + e.message);
+                btn.disabled = false;
+                btn.innerText = "COMPARE CHARTS";
+            }
+        }
+
+        function connectComparison(sessionId, name1, name2) {
+            console.log("[WS] Connecting to comparison session...");
+            socket = new WebSocket(`ws://127.0.0.1:8000/api/v1/comparison/ws/${sessionId}`);
+            socket.binaryType = 'arraybuffer';
+
+            socket.onopen = () => {
+                console.log("[WS] Connected to comparison session");
+                updateStatus("ACHARYA IS ANALYZING...");
+            };
+
+            socket.onmessage = (event) => {
+                if (typeof event.data === "string") {
+                    const msg = JSON.parse(event.data);
+                    console.log("[WS] Received:", msg.status);
+                    handleComparisonMessage(msg);
+                } else {
+                    playAudioChunk(event.data);
+                }
+            };
+
+            socket.onerror = (error) => {
+                console.error("[WS] Error:", error);
+                updateStatus("CONNECTION ERROR");
+            };
+
+            socket.onclose = () => {
+                console.log("[WS] Connection closed");
+                updateStatus("ANALYSIS COMPLETE");
+            };
+        }
+
+        function handleComparisonMessage(msg) {
+            if (msg.status === "calculating_charts") {
+                updateStatus("Calculating charts for both persons...");
+            }
+            else if (msg.status === "charts_calculated") {
+                updateStatus("Charts calculated. Generating analysis...");
+            }
+            else if (msg.status === "analyzing") {
+                updateStatus("Acharya is analyzing the cosmic connection...");
+            }
+            else if (msg.status === "comparison_result") {
+                console.log("[Result] Received analysis");
+                displayComparisonResults(msg.analysis, msg.scores);
+            }
+            else if (msg.status === "ai_speaking") {
+                updateStatus("ACHARYA IS SPEAKING...");
+            }
+            else if (msg.status === "ai_finished_speaking") {
+                updateStatus("ANALYSIS COMPLETE");
+            }
+            else if (msg.status === "error") {
+                console.error("[Error]", msg.message);
+                updateStatus("ERROR: " + msg.message);
+            }
+        }
+
+        function displayComparisonResults(analysis, scores) {
+            // Update scores
+            document.getElementById('scoreOverall').innerText = Math.round(scores.overall);
+            document.getElementById('scoreEmotional').innerText = Math.round(scores.emotional);
+            document.getElementById('scoreIntellectual').innerText = Math.round(scores.intellectual);
+            document.getElementById('scoreFinancial').innerText = Math.round(scores.financial);
+            document.getElementById('scorePhysical').innerText = Math.round(scores.physical);
+
+            // Build analysis sections
+            const container = document.getElementById('analysisContainer');
+            container.innerHTML = '';
+
+            const sections = [
+                { title: '💞 Summary', content: analysis.summary },
+                { title: '💭 Emotional Harmony', content: analysis.emotional_analysis },
+                { title: '🧠 Intellectual Connection', content: analysis.intellectual_analysis },
+                { title: '💰 Financial Prosperity', content: analysis.financial_analysis },
+                { title: '🔥 Physical Attraction', content: analysis.physical_analysis },
+                { title: '💪 Strengths Together', content: analysis.strengths },
+                { title: '⚡ Challenges to Navigate', content: analysis.challenges },
+                { title: '🙏 Divine Remedies', content: analysis.recommendations }
+            ];
+
+            sections.forEach(section => {
+                const div = document.createElement('div');
+                div.className = 'analysis-section';
+                div.innerHTML = `
+                    <h3>${section.title}</h3>
+                    <p>${section.content}</p>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function drawChart(chartData, svgId) {
+            const svg = document.getElementById(svgId);
+            svg.innerHTML = '';
+
+            const HOUSE_PATHS = {
+                1:  "200,200 100,100 200,0 300,100",
+                2:  "100,100 0,0 200,0",
+                3:  "0,0 0,200 100,100",
+                4:  "200,200 100,100 0,200 100,300",
+                5:  "0,200 0,400 100,300",
+                6:  "100,300 0,400 200,400",
+                7:  "200,200 100,300 200,400 300,300",
+                8:  "200,400 400,400 300,300",
+                9:  "400,400 400,200 300,300",
+                10: "200,200 300,300 400,200 300,100",
+                11: "400,200 400,0 300,100",
+                12: "300,100 400,0 200,0"
+            };
+
+            const HOUSE_CENTERS = {
+                1:  [200, 100], 2:  [100, 50],  3:  [50, 100],
+                4:  [100, 200], 5:  [50, 300],  6:  [100, 350],
+                7:  [200, 300], 8:  [300, 350], 9:  [350, 300],
+                10: [300, 200], 11: [350, 100], 12: [300, 50]
+            };
+
+            // Draw houses
+            for (let i = 1; i <= 12; i++) {
+                let poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+                poly.setAttribute("points", HOUSE_PATHS[i]);
+                poly.setAttribute("fill", "rgba(0,0,0,0.6)");
+                poly.setAttribute("stroke", "var(--gold)");
+                poly.setAttribute("stroke-width", "1.5");
+                svg.appendChild(poly);
+
+                let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", HOUSE_CENTERS[i][0]);
+                text.setAttribute("y", HOUSE_CENTERS[i][1]);
+                text.setAttribute("fill", "var(--starlight)");
+                text.setAttribute("font-size", "12");
+                text.setAttribute("text-anchor", "middle");
+                svg.appendChild(text);
+            }
+
+            // Populate planets
+            if (chartData && chartData.planets) {
+                for (const [planet, data] of Object.entries(chartData.planets)) {
+                    const house = data.house;
+                    const text = document.querySelector(`#${svgId} text:nth-of-type(${house})`);
+                    if (text) {
+                        text.textContent = (text.textContent + " " + planet.charAt(0).toUpperCase()).trim();
+                    }
+                }
+            }
+
+            // Border
+            let border = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            border.setAttribute("x", "2"); border.setAttribute("y", "2");
+            border.setAttribute("width", "396"); border.setAttribute("height", "396");
+            border.setAttribute("fill", "none");
+            border.setAttribute("stroke", "#d4af37");
+            border.setAttribute("stroke-width", "2");
+            svg.appendChild(border);
+        }
+
+        function initAudioCtx() {
+            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+        }
+
+        function playAudioChunk(buffer) {
+            console.log(`[Audio] Playing chunk: ${buffer.byteLength} bytes`);
+            initAudioCtx();
+            const float32 = new Float32Array(new Int16Array(buffer).length);
+            const int16 = new Int16Array(buffer);
+            for (let i = 0; i < int16.length; i++) float32[i] = int16[i] / 32768.0;
+
+            const audioBuf = audioContext.createBuffer(1, float32.length, 24000);
+            audioBuf.getChannelData(0).set(float32);
+            
+            const source = audioContext.createBufferSource();
+            source.buffer = audioBuf;
+            source.connect(audioContext.destination);
+            
+            let start = Math.max(audioContext.currentTime, nextStartTime);
+            source.start(start);
+            nextStartTime = start + audioBuf.duration;
+        }
+
+        function updateStatus(txt) {
+            document.getElementById('statusText').innerText = txt;
         }
     </script>
 
