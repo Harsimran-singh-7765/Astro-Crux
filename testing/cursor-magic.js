@@ -7,8 +7,11 @@ class MysticalCursor {
     constructor() {
         this.x = 0;
         this.y = 0;
+        this.prevX = 0;
+        this.prevY = 0;
         this.particles = [];
         this.mouseDown = false;
+        this.trailPoints = [];
         
         this.init();
     }
@@ -47,29 +50,21 @@ class MysticalCursor {
     }
 
     onMouseMove(e) {
+        this.prevX = this.x;
+        this.prevY = this.y;
         this.x = e.clientX;
         this.y = e.clientY;
         
-        // Create star particles
-        this.createStars();
-    }
-
-    createStars() {
-        // Add multiple stars per movement
-        for (let i = 0; i < 3; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const velocity = 1 + Math.random() * 2;
-            
-            this.particles.push({
-                x: this.x,
-                y: this.y,
-                vx: Math.cos(angle) * velocity,
-                vy: Math.sin(angle) * velocity,
-                life: 1,
-                size: Math.random() * 2 + 1,
-                hue: 260 + Math.random() * 30, // Purple to violet range
-                opacity: 1
-            });
+        // Add trail point
+        this.trailPoints.push({
+            x: this.x,
+            y: this.y,
+            life: 1
+        });
+        
+        // Keep trail length manageable
+        if (this.trailPoints.length > 15) {
+            this.trailPoints.shift();
         }
     }
 
@@ -77,63 +72,53 @@ class MysticalCursor {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Update and draw particles
-        for (let i = this.particles.length - 1; i >= 0; i--) {
-            const p = this.particles[i];
-            
-            // Update position
-            p.x += p.vx;
-            p.y += p.vy;
-            
-            // Fade out
-            p.life -= 0.02;
-            p.opacity = p.life;
-            
-            // Add gravity effect
-            p.vy += 0.1;
-            
-            // Draw star
-            this.drawStar(p);
-            
-            // Remove dead particles
-            if (p.life <= 0) {
-                this.particles.splice(i, 1);
-            }
-        }
+        // Draw comet tail
+        this.drawCometTail();
         
-        // Draw cursor glow and core
-        this.drawCursor();
+        // Draw cursor ball
+        this.drawCursorBall();
         
         requestAnimationFrame(() => this.animate());
     }
 
-    drawStar(p) {
-        this.ctx.save();
-        this.ctx.globalAlpha = p.opacity;
-        
-        // Star glow
-        const gradient = this.ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
-        gradient.addColorStop(0, `hsla(${p.hue}, 100%, 60%, ${p.opacity})`);
-        gradient.addColorStop(0.5, `hsla(${p.hue}, 100%, 40%, ${p.opacity * 0.5})`);
-        gradient.addColorStop(1, `hsla(${p.hue}, 100%, 20%, 0)`);
-        
-        this.ctx.fillStyle = gradient;
-        this.ctx.beginPath();
-        this.ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        // Star core
-        this.ctx.fillStyle = `hsla(${p.hue}, 100%, 80%, ${p.opacity})`;
-        this.ctx.beginPath();
-        this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        this.ctx.restore();
+    drawCometTail() {
+        // Fade trail points
+        for (let i = 0; i < this.trailPoints.length; i++) {
+            const p = this.trailPoints[i];
+            p.life -= 0.08;
+            
+            if (p.life <= 0) {
+                this.trailPoints.splice(i, 1);
+                i--;
+                continue;
+            }
+            
+            // Size decreases towards the back
+            const sizeRatio = (i / this.trailPoints.length);
+            const size = 8 * sizeRatio * p.life;
+            
+            // Draw tail glow
+            const gradient = this.ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 2);
+            gradient.addColorStop(0, `hsla(270, 100%, 60%, ${p.life * 0.6})`);
+            gradient.addColorStop(0.5, `hsla(280, 100%, 45%, ${p.life * 0.3})`);
+            gradient.addColorStop(1, `hsla(290, 100%, 30%, 0)`);
+            
+            this.ctx.fillStyle = gradient;
+            this.ctx.beginPath();
+            this.ctx.arc(p.x, p.y, size * 2, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            // Tail core
+            this.ctx.fillStyle = `hsla(270, 100%, 70%, ${p.life * 0.8})`;
+            this.ctx.beginPath();
+            this.ctx.arc(p.x, p.y, size * 0.7, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
     }
 
-    drawCursor() {
-        const size = 12;
-        const glowSize = 30;
+    drawCursorBall() {
+        const size = 10;
+        const glowSize = 35;
         
         this.ctx.save();
         
@@ -145,69 +130,83 @@ class MysticalCursor {
             this.x, this.y, 0,
             this.x, this.y, auraSize
         );
-        auraGradient.addColorStop(0, 'rgba(168, 85, 247, 0.4)');      // Purple
-        auraGradient.addColorStop(0.5, 'rgba(147, 51, 234, 0.2)');    // Violet
-        auraGradient.addColorStop(1, 'rgba(139, 92, 246, 0)');        // Transparent
+        auraGradient.addColorStop(0, 'rgba(192, 132, 250, 0.5)');     // Purple
+        auraGradient.addColorStop(0.5, 'rgba(168, 85, 247, 0.25)');   // Violet
+        auraGradient.addColorStop(1, 'rgba(147, 51, 234, 0)');        // Transparent
         
         this.ctx.fillStyle = auraGradient;
         this.ctx.beginPath();
         this.ctx.arc(this.x, this.y, auraSize, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // Inner glow
+        // Inner glow layer
         const innerGradient = this.ctx.createRadialGradient(
             this.x, this.y, 0,
             this.x, this.y, glowSize
         );
-        innerGradient.addColorStop(0, 'rgba(196, 181, 253, 0.8)');    // Light purple
-        innerGradient.addColorStop(0.6, 'rgba(168, 85, 247, 0.4)');   // Medium purple
-        innerGradient.addColorStop(1, 'rgba(147, 51, 234, 0)');       // Fade out
+        innerGradient.addColorStop(0, 'rgba(216, 180, 254, 0.7)');    // Light purple
+        innerGradient.addColorStop(0.6, 'rgba(192, 132, 250, 0.4)');  // Medium purple
+        innerGradient.addColorStop(1, 'rgba(168, 85, 247, 0)');       // Fade out
         
         this.ctx.fillStyle = innerGradient;
         this.ctx.beginPath();
         this.ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // Cursor center - mystical star
-        this.drawMysticalStar(this.x, this.y, size);
+        // Spherical ball - 3D effect
+        this.drawSphericalBall(this.x, this.y, size);
         
         this.ctx.restore();
     }
 
-    drawMysticalStar(x, y, size) {
+    drawSphericalBall(x, y, size) {
         this.ctx.save();
         
-        // Star outline glow
-        this.ctx.strokeStyle = 'rgba(196, 181, 253, 0.8)';
-        this.ctx.lineWidth = 2;
-        this.ctx.shadowColor = 'rgba(168, 85, 247, 0.8)';
-        this.ctx.shadowBlur = 15;
+        // Outer sphere shadow for depth
+        const shadowGradient = this.ctx.createRadialGradient(x, y, 0, x, y, size * 1.1);
+        shadowGradient.addColorStop(0, 'rgba(168, 85, 247, 0.3)');
+        shadowGradient.addColorStop(1, 'rgba(100, 40, 200, 0.1)');
         
-        // Draw 5-pointed star
+        this.ctx.fillStyle = shadowGradient;
         this.ctx.beginPath();
-        for (let i = 0; i < 5; i++) {
-            const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
-            const sx = x + Math.cos(angle) * size;
-            const sy = y + Math.sin(angle) * size;
-            
-            if (i === 0) this.ctx.moveTo(sx, sy);
-            else this.ctx.lineTo(sx, sy);
-        }
-        this.ctx.closePath();
-        this.ctx.stroke();
-        
-        // Star fill with gradient
-        const starGradient = this.ctx.createRadialGradient(x, y, 0, x, y, size);
-        starGradient.addColorStop(0, 'rgba(220, 198, 255, 1)');       // White-purple center
-        starGradient.addColorStop(1, 'rgba(168, 85, 247, 0.6)');      // Purple edge
-        
-        this.ctx.fillStyle = starGradient;
+        this.ctx.arc(x, y, size * 1.1, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // Center dot
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        // Main sphere with 3D gradient
+        const sphereGradient = this.ctx.createRadialGradient(
+            x - size * 0.3, y - size * 0.3, 0,
+            x, y, size * 1.2
+        );
+        sphereGradient.addColorStop(0, 'rgba(230, 204, 255, 1)');      // Bright center
+        sphereGradient.addColorStop(0.4, 'rgba(200, 140, 255, 0.9)');  // Mid tone
+        sphereGradient.addColorStop(0.8, 'rgba(168, 85, 247, 0.8)');   // Purple
+        sphereGradient.addColorStop(1, 'rgba(120, 40, 200, 0.6)');     // Dark edge
+        
+        this.ctx.fillStyle = sphereGradient;
         this.ctx.beginPath();
-        this.ctx.arc(x, y, 3, 0, Math.PI * 2);
+        this.ctx.arc(x, y, size, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Sphere outline with glow
+        this.ctx.strokeStyle = 'rgba(216, 180, 254, 0.9)';
+        this.ctx.lineWidth = 1.5;
+        this.ctx.shadowColor = 'rgba(192, 132, 250, 0.9)';
+        this.ctx.shadowBlur = 12;
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, size, 0, Math.PI * 2);
+        this.ctx.stroke();
+        
+        // Bright highlight for glossy effect
+        const highlightGradient = this.ctx.createRadialGradient(
+            x - size * 0.4, y - size * 0.4, 0,
+            x - size * 0.4, y - size * 0.4, size * 0.6
+        );
+        highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
+        highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        
+        this.ctx.fillStyle = highlightGradient;
+        this.ctx.beginPath();
+        this.ctx.arc(x - size * 0.4, y - size * 0.4, size * 0.6, 0, Math.PI * 2);
         this.ctx.fill();
         
         this.ctx.restore();
