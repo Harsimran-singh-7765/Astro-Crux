@@ -178,6 +178,7 @@ function displayPlanetsInHouses(houses, planets) {
 async function startSession() {
     initChart();
     
+    
     const btn = document.getElementById('connectBtn');
     const name = document.getElementById('userName').value;
     const date = document.getElementById('birthDate').value;
@@ -188,6 +189,17 @@ async function startSession() {
     btn.innerText = "ALIGNING STARS...";
 
     try {
+        // In your startSession() function, add this BEFORE the actual request:
+
+// DEBUG TEST
+const debugRes = await fetch('http://127.0.0.1:8000/api/v1/game/debug-start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, date, time, location })
+});
+const debugData = await debugRes.json();
+console.log("DEBUG RESPONSE:", debugData);
+        
         const res = await fetch('http://127.0.0.1:8000/api/v1/game/start', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

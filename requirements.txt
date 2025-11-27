@@ -13,3 +13,4 @@ httpx
 skyfield      # <--- NEW: NASA-grade Astronomy
 pytz          # <--- NEW: Timezone handling
 chromadb     # <--- NEW: Vector database
+sentence-transformers
