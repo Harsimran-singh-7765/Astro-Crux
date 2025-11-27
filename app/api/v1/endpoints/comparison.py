@@ -6,7 +6,7 @@ from app.services.game_session_manager import GameSessionManager
 
 # --- CHANGE 1: Import the new Engine Singleton ---
 # Ensure astroengine.py is inside app/services/
-from app.services.astroengine import astro_engine 
+from app.services.astro_engine import astro_engine 
 
 router = APIRouter()
 active_sessions = {}
